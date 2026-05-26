@@ -31,7 +31,7 @@ st.markdown("""
 with open("nqdc_calculator.html", "r") as f:
     html_content = f.read()
 
-st.components.v1.html(html_content, height=1800, scrolling=True)
+st.components.v1.html(html_content, height=1250, scrolling=True)
 
 col1, col2, col3 = st.columns([2, 1, 2])
 with col2:
