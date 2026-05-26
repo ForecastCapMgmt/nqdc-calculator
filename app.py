@@ -22,8 +22,11 @@ st.markdown("""
             font-size: 0.85rem;
             letter-spacing: 0.02em;
         }
-        div[data-testid="stLinkButton"] a:hover {
-            background: #e4c97a;
+        div[data-testid="stLinkButton"] a:hover { background: #e4c97a; }
+
+        @media (max-width: 768px) {
+            .block-container { padding: 0 !important; }
+            iframe { width: 100% !important; }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -43,6 +46,7 @@ st.markdown("""
         color: #7a8fa8;
         font-weight: 300;
         line-height: 1.6;
+        padding: 0 1rem;
     ">
         These scenarios are a starting point. A personalized NQDC review looks at your 
         full comp stack — RSUs, options, severance, spouse income — and builds a 
