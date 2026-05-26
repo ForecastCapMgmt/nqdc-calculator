@@ -35,7 +35,6 @@
       line-height: 1.6;
     }
 
-    /* ── Header ── */
     .site-header {
       border-bottom: 1px solid var(--navy-border);
       padding: 1.25rem 2rem;
@@ -73,7 +72,6 @@
       letter-spacing: 0.1em;
     }
 
-    /* ── Hero ── */
     .hero {
       max-width: 1280px;
       margin: 0 auto;
@@ -104,7 +102,6 @@
       font-weight: 300;
     }
 
-    /* ── Layout ── */
     .calc-wrap {
       max-width: 1280px;
       margin: 0 auto;
@@ -118,7 +115,6 @@
       .calc-wrap { grid-template-columns: 1fr; }
     }
 
-    /* ── Input Panel ── */
     .inputs-panel {
       background: var(--navy-mid);
       border: 1px solid var(--navy-border);
@@ -218,10 +214,8 @@
     }
     select.input-select:focus { border-color: var(--gold); }
 
-    /* ── Results Panel ── */
     .results-panel { display: flex; flex-direction: column; gap: 1.25rem; }
 
-    /* Hero result */
     .hero-result {
       background: var(--navy-mid);
       border: 1px solid var(--navy-border);
@@ -279,7 +273,6 @@
       color: #f08080;
     }
 
-    /* Comparison cards */
     .card-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -320,7 +313,6 @@
     }
     .cmp-detail { font-size: 0.72rem; color: var(--cream-dim); }
 
-    /* Chart */
     .chart-card {
       background: var(--navy-mid);
       border: 1px solid var(--navy-border);
@@ -342,10 +334,7 @@
       letter-spacing: 0.12em;
       color: var(--cream-dim);
     }
-    .legend {
-      display: flex;
-      gap: 1.25rem;
-    }
+    .legend { display: flex; gap: 1.25rem; }
     .legend-item {
       display: flex;
       align-items: center;
@@ -353,15 +342,11 @@
       font-size: 0.68rem;
       color: var(--cream-dim);
     }
-    .legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
     .legend-dot.d { background: var(--gold); }
     .legend-dot.n { background: #6b8fa8; }
     canvas { max-height: 210px; }
 
-    /* Stats row */
     .stats-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -401,11 +386,7 @@
     .risk-dot.mod  { background: var(--yellow); box-shadow: 0 0 7px var(--yellow); }
     .risk-dot.high { background: var(--red); box-shadow: 0 0 7px var(--red); }
 
-    /* ── CTA ── */
-    .cta-wrap {
-      border-top: 1px solid var(--navy-border);
-      margin-top: 1rem;
-    }
+    .cta-wrap { border-top: 1px solid var(--navy-border); margin-top: 1rem; }
     .cta-inner {
       max-width: 1280px;
       margin: 0 auto;
@@ -445,7 +426,6 @@
     }
     .cta-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
 
-    /* ── Footer ── */
     footer {
       border-top: 1px solid var(--navy-border);
       padding: 1.25rem 2rem;
@@ -466,7 +446,6 @@
 </head>
 <body>
 
-<!-- ── Header ── -->
 <header class="site-header">
   <div class="header-inner">
     <div>
@@ -477,21 +456,17 @@
   </div>
 </header>
 
-<!-- ── Hero ── -->
 <section class="hero">
   <div class="eyebrow">Compensation Planning · NQDC</div>
   <h1>Should You Defer — or <em>Not?</em></h1>
   <p>Model your exact situation in real time. Adjust the inputs to see the after-tax difference between deferring your compensation and investing it today.</p>
 </section>
 
-<!-- ── Calculator ── -->
 <main class="calc-wrap">
 
-  <!-- LEFT: Inputs -->
   <aside class="inputs-panel">
     <div class="panel-label">Your Scenario</div>
 
-    <!-- Amount -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">Deferral amount</span>
@@ -502,7 +477,6 @@
 
     <hr class="divider">
 
-    <!-- Current tax -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">Current marginal tax rate</span>
@@ -511,7 +485,6 @@
       <input type="range" id="curTaxSlider" min="20" max="60" step="1" value="45">
     </div>
 
-    <!-- Future tax -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">Expected rate at distribution</span>
@@ -522,7 +495,6 @@
 
     <hr class="divider">
 
-    <!-- Years -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">Years until distribution</span>
@@ -531,7 +503,6 @@
       <input type="range" id="yearsSlider" min="1" max="30" step="1" value="7">
     </div>
 
-    <!-- Plan return -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">Pre-tax return inside plan</span>
@@ -540,7 +511,6 @@
       <input type="range" id="planRetSlider" min="1" max="15" step="0.5" value="7">
     </div>
 
-    <!-- Taxable return -->
     <div class="input-group">
       <div class="input-row">
         <span class="input-row-label">After-tax return (taxable acct)</span>
@@ -551,7 +521,6 @@
 
     <hr class="divider">
 
-    <!-- Employer health -->
     <div class="input-group">
       <label class="select-label" for="empHealth">Employer financial health</label>
       <select id="empHealth" class="input-select">
@@ -562,10 +531,8 @@
     </div>
   </aside>
 
-  <!-- RIGHT: Results -->
   <div class="results-panel">
 
-    <!-- Hero result -->
     <div class="hero-result">
       <div class="result-label">Net Benefit of Deferral</div>
       <div class="hero-number pos" id="netBenefit">—</div>
@@ -573,7 +540,6 @@
       <div class="verdict-badge pos" id="verdict">Calculating…</div>
     </div>
 
-    <!-- Comparison cards -->
     <div class="card-row">
       <div class="cmp-card">
         <div class="cmp-tag deferred">Deferred Path</div>
@@ -587,7 +553,6 @@
       </div>
     </div>
 
-    <!-- Chart -->
     <div class="chart-card">
       <div class="chart-head">
         <div class="chart-title">Year-by-Year Growth Comparison</div>
@@ -599,7 +564,6 @@
       <canvas id="growthChart"></canvas>
     </div>
 
-    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-label">Break-Even Future Tax Rate</div>
@@ -618,14 +582,13 @@
   </div>
 </main>
 
-<!-- ── CTA ── -->
 <div class="cta-wrap">
   <div class="cta-inner">
     <div class="cta-copy">
       <h2>Want a second set of eyes on your numbers?</h2>
       <p>These scenarios are a starting point. A personalized NQDC review looks at your full comp stack — RSUs, options, severance, spouse income — and builds a distribution ladder designed to avoid bracket spikes.</p>
     </div>
-    <a href="#" class="cta-btn">Book a 30-Minute Review →</a>
+    <a href="https://calendly.com/forecastcapitalmanagement/forecastmeeting" target="_top" rel="noopener" class="cta-btn">Book a 30-Minute Review →</a>
   </div>
 </div>
 
@@ -634,7 +597,6 @@
 </footer>
 
 <script>
-  // ── State ──
   const s = {
     amount: 100000,
     curTax: 45,
@@ -645,12 +607,10 @@
     employer: 'strong'
   };
 
-  // ── Formatters ──
   const dollar = v => '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
   const dollarSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
   const pct = v => v.toFixed(1) + '%';
 
-  // ── Math ──
   function calc() {
     const r  = s.planRet / 100;
     const rt = s.taxRet  / 100;
@@ -659,14 +619,12 @@
     const n  = s.years;
     const A  = s.amount;
 
-    const deferredGross = A * Math.pow(1 + r, n);
-    const deferredNet   = deferredGross * (1 - tf);
+    const deferredGross  = A * Math.pow(1 + r, n);
+    const deferredNet    = deferredGross * (1 - tf);
     const nondeferredNet = A * (1 - tc) * Math.pow(1 + rt, n);
-    const benefit = deferredNet - nondeferredNet;
-    // Break-even: deferredGross*(1-T) = nondeferredNet → T = 1 - nondeferredNet/deferredGross
-    const breakEven = (1 - nondeferredNet / deferredGross) * 100;
+    const benefit        = deferredNet - nondeferredNet;
+    const breakEven      = (1 - nondeferredNet / deferredGross) * 100;
 
-    // Year-by-year series
     const dSeries = [], nSeries = [];
     for (let y = 0; y <= n; y++) {
       dSeries.push(Math.round(A * Math.pow(1 + r, y) * (1 - tf)));
@@ -676,7 +634,6 @@
     return { deferredNet, nondeferredNet, benefit, breakEven, dSeries, nSeries };
   }
 
-  // ── Risk text ──
   function riskInfo(employer) {
     const map = {
       strong:   { cls: 'low',  text: 'Low counterparty risk. Intentional sizing is still prudent — cap exposure relative to your overall net worth.' },
@@ -686,7 +643,6 @@
     return map[employer];
   }
 
-  // ── Chart ──
   let chart = null;
   function drawChart(dSeries, nSeries, years) {
     const labels = Array.from({ length: years + 1 }, (_, i) => i === 0 ? 'Now' : `Yr ${i}`);
@@ -758,13 +714,11 @@
     });
   }
 
-  // ── Update ──
   function update() {
     const { deferredNet, nondeferredNet, benefit, breakEven, dSeries, nSeries } = calc();
     const risk = riskInfo(s.employer);
     const isPos = benefit >= 0;
 
-    // Hero
     const heroEl = document.getElementById('netBenefit');
     heroEl.textContent = dollarSigned(benefit);
     heroEl.className = 'hero-number ' + (isPos ? 'pos' : 'neg');
@@ -775,27 +729,22 @@
       : 'Non-deferral outperforms in this scenario';
     verdictEl.className = 'verdict-badge ' + (isPos ? 'pos' : 'neg');
 
-    // Cards
-    document.getElementById('deferredVal').textContent   = dollar(deferredNet);
+    document.getElementById('deferredVal').textContent    = dollar(deferredNet);
     document.getElementById('nondeferredVal').textContent = dollar(nondeferredNet);
 
-    // Break-even
     document.getElementById('breakEvenVal').textContent = pct(breakEven);
     const beMsg = breakEven > s.futTax
       ? `Your expected rate (${s.futTax}%) is below this — deferral wins`
       : `Your expected rate (${s.futTax}%) exceeds this — reconsider deferral`;
     document.getElementById('breakEvenDetail').textContent = beMsg;
 
-    // Risk
     const dot = document.getElementById('riskDot');
     dot.className = 'risk-dot ' + risk.cls;
     document.getElementById('riskText').textContent = risk.text;
 
-    // Chart
     drawChart(dSeries, nSeries, s.years);
   }
 
-  // ── Slider wiring ──
   function wire(sliderId, valId, stateKey, toDisplay) {
     const slider = document.getElementById(sliderId);
     const valEl  = document.getElementById(valId);
@@ -819,18 +768,17 @@
   }
 
   wire('amountSlider', 'amountVal', 'amount',  v => '$' + Math.round(v).toLocaleString('en-US'));
-  wire('curTaxSlider', 'curTaxVal',  'curTax',  v => v + '%');
-  wire('futTaxSlider', 'futTaxVal',  'futTax',  v => v + '%');
-  wire('yearsSlider',  'yearsVal',   'years',   v => v + ' yrs');
-  wire('planRetSlider','planRetVal', 'planRet', v => v.toFixed(1) + '%');
-  wire('taxRetSlider', 'taxRetVal',  'taxRet',  v => v.toFixed(1) + '%');
+  wire('curTaxSlider', 'curTaxVal', 'curTax',  v => v + '%');
+  wire('futTaxSlider', 'futTaxVal', 'futTax',  v => v + '%');
+  wire('yearsSlider',  'yearsVal',  'years',   v => v + ' yrs');
+  wire('planRetSlider','planRetVal','planRet',  v => v.toFixed(1) + '%');
+  wire('taxRetSlider', 'taxRetVal', 'taxRet',  v => v.toFixed(1) + '%');
 
   document.getElementById('empHealth').addEventListener('change', e => {
     s.employer = e.target.value;
     update();
   });
 
-  // ── Init ──
   update();
 </script>
 </body>
