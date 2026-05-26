@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NQDC Scenario Calculator — Forecast Capital Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy:        #0c1824;
+      --navy-mid:    #142035;
+      --navy-light:  #1b2d47;
+      --navy-border: #243858;
+      --gold:        #c9a84c;
+      --gold-light:  #e4c97a;
+      --gold-dim:    rgba(201,168,76,0.15);
+      --cream:       #f2ede6;
+      --cream-dim:   #7a8fa8;
+      --green:       #4caf7d;
+      --red:         #e05c5c;
+      --yellow:      #f0b429;
+      --font-display:'Playfair Display', Georgia, serif;
+      --font-mono:   'IBM Plex Mono', 'Courier New', monospace;
+      --font-sans:   'DM Sans', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--cream);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      border-bottom: 1px solid var(--navy-border);
+      padding: 1.25rem 2rem;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+    .logo-sub {
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 300;
+      color: var(--cream-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .header-pill {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--cream-dim);
+      border: 1px solid var(--navy-border);
+      padding: 0.3rem 0.7rem;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 3rem 2rem 2.25rem;
+      border-bottom: 1px solid var(--navy-border);
+    }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 0.8rem;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+      font-weight: 600;
+      line-height: 1.2;
+      max-width: 680px;
+      margin-bottom: 0.75rem;
+    }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero p {
+      font-size: 0.9rem;
+      color: var(--cream-dim);
+      max-width: 580px;
+      font-weight: 300;
+    }
+
+    /* ── Layout ── */
+    .calc-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.75rem;
+      align-items: start;
+    }
+    @media (max-width: 920px) {
+      .calc-wrap { grid-template-columns: 1fr; }
+    }
+
+    /* ── Input Panel ── */
+    .inputs-panel {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 4px;
+      padding: 1.75rem;
+      position: sticky;
+      top: 1.25rem;
+    }
+    .panel-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--navy-border);
+      margin-bottom: 1.5rem;
+    }
+    .input-group { margin-bottom: 1.4rem; }
+    .input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+    .input-row-label {
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+      font-weight: 400;
+    }
+    .val-input {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--cream);
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      border-radius: 2px;
+      padding: 0.2rem 0.5rem;
+      width: 88px;
+      text-align: right;
+      transition: border-color 0.2s;
+    }
+    .val-input:focus { outline: none; border-color: var(--gold); }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 2px;
+      background: var(--navy-border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid var(--navy-mid);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+    input[type="range"]::-moz-range-thumb {
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid var(--navy-mid);
+      cursor: pointer;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--navy-border);
+      margin: 1.25rem 0;
+    }
+
+    .select-label {
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+      margin-bottom: 0.45rem;
+      display: block;
+    }
+    select.input-select {
+      width: 100%;
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      border-radius: 2px;
+      color: var(--cream);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select.input-select:focus { border-color: var(--gold); }
+
+    /* ── Results Panel ── */
+    .results-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* Hero result */
+    .hero-result {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 4px;
+      padding: 2rem 1.75rem 1.75rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-result::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .result-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--cream-dim);
+      margin-bottom: 0.75rem;
+    }
+    .hero-number {
+      font-family: var(--font-mono);
+      font-size: clamp(2.2rem, 4.5vw, 3.25rem);
+      font-weight: 500;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      transition: color 0.3s;
+    }
+    .hero-number.pos { color: var(--gold); }
+    .hero-number.neg { color: var(--red); }
+    .hero-sub {
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+      margin-bottom: 0.85rem;
+    }
+    .verdict-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 2px;
+    }
+    .verdict-badge.pos {
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold-light);
+    }
+    .verdict-badge.neg {
+      background: rgba(224,92,92,0.1);
+      border: 1px solid rgba(224,92,92,0.3);
+      color: #f08080;
+    }
+
+    /* Comparison cards */
+    .card-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .cmp-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 4px;
+      padding: 1.25rem;
+    }
+    .cmp-tag {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cmp-tag::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .cmp-tag.deferred { color: var(--gold); }
+    .cmp-tag.deferred::before { background: var(--gold); }
+    .cmp-tag.nond { color: var(--cream-dim); }
+    .cmp-tag.nond::before { background: #6b8fa8; }
+    .cmp-value {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 0.2rem;
+    }
+    .cmp-detail { font-size: 0.72rem; color: var(--cream-dim); }
+
+    /* Chart */
+    .chart-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 4px;
+      padding: 1.5rem;
+    }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .chart-title {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cream-dim);
+    }
+    .legend {
+      display: flex;
+      gap: 1.25rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.68rem;
+      color: var(--cream-dim);
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .legend-dot.d { background: var(--gold); }
+    .legend-dot.n { background: #6b8fa8; }
+    canvas { max-height: 210px; }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .stat-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 4px;
+      padding: 1.25rem;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cream-dim);
+      margin-bottom: 0.45rem;
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 0.2rem;
+    }
+    .stat-detail { font-size: 0.72rem; color: var(--cream-dim); line-height: 1.4; }
+
+    .risk-row { display: flex; align-items: flex-start; gap: 0.6rem; margin-top: 0.15rem; }
+    .risk-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .risk-dot.low  { background: var(--green); box-shadow: 0 0 7px var(--green); }
+    .risk-dot.mod  { background: var(--yellow); box-shadow: 0 0 7px var(--yellow); }
+    .risk-dot.high { background: var(--red); box-shadow: 0 0 7px var(--red); }
+
+    /* ── CTA ── */
+    .cta-wrap {
+      border-top: 1px solid var(--navy-border);
+      margin-top: 1rem;
+    }
+    .cta-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .cta-copy h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .cta-copy p {
+      font-size: 0.88rem;
+      color: var(--cream-dim);
+      max-width: 520px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--navy);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.9rem 2rem;
+      border-radius: 2px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .cta-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--navy-border);
+      padding: 1.25rem 2rem;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--cream-dim);
+      font-weight: 300;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .card-row, .stats-row { grid-template-columns: 1fr; }
+      .cta-inner { flex-direction: column; }
+      .legend { gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="logo-name">Forecast Capital Management</div>
+      <div class="logo-sub">Executive Financial Planning</div>
+    </div>
+    <div class="header-pill">NQDC Scenario Tool</div>
+  </div>
+</header>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="eyebrow">Compensation Planning · NQDC</div>
+  <h1>Should You Defer — or <em>Not?</em></h1>
+  <p>Model your exact situation in real time. Adjust the inputs to see the after-tax difference between deferring your compensation and investing it today.</p>
+</section>
+
+<!-- ── Calculator ── -->
+<main class="calc-wrap">
+
+  <!-- LEFT: Inputs -->
+  <aside class="inputs-panel">
+    <div class="panel-label">Your Scenario</div>
+
+    <!-- Amount -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">Deferral amount</span>
+        <input type="text" class="val-input" id="amountVal" value="$100,000">
+      </div>
+      <input type="range" id="amountSlider" min="5000" max="500000" step="5000" value="100000">
+    </div>
+
+    <hr class="divider">
+
+    <!-- Current tax -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">Current marginal tax rate</span>
+        <input type="text" class="val-input" id="curTaxVal" value="45%">
+      </div>
+      <input type="range" id="curTaxSlider" min="20" max="60" step="1" value="45">
+    </div>
+
+    <!-- Future tax -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">Expected rate at distribution</span>
+        <input type="text" class="val-input" id="futTaxVal" value="35%">
+      </div>
+      <input type="range" id="futTaxSlider" min="20" max="60" step="1" value="35">
+    </div>
+
+    <hr class="divider">
+
+    <!-- Years -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">Years until distribution</span>
+        <input type="text" class="val-input" id="yearsVal" value="7 yrs">
+      </div>
+      <input type="range" id="yearsSlider" min="1" max="30" step="1" value="7">
+    </div>
+
+    <!-- Plan return -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">Pre-tax return inside plan</span>
+        <input type="text" class="val-input" id="planRetVal" value="7.0%">
+      </div>
+      <input type="range" id="planRetSlider" min="1" max="15" step="0.5" value="7">
+    </div>
+
+    <!-- Taxable return -->
+    <div class="input-group">
+      <div class="input-row">
+        <span class="input-row-label">After-tax return (taxable acct)</span>
+        <input type="text" class="val-input" id="taxRetVal" value="5.5%">
+      </div>
+      <input type="range" id="taxRetSlider" min="1" max="15" step="0.5" value="5.5">
+    </div>
+
+    <hr class="divider">
+
+    <!-- Employer health -->
+    <div class="input-group">
+      <label class="select-label" for="empHealth">Employer financial health</label>
+      <select id="empHealth" class="input-select">
+        <option value="strong">Strong — Large, stable public company</option>
+        <option value="moderate">Moderate — Smaller or private company</option>
+        <option value="atrisk">At Risk — Financial uncertainty present</option>
+      </select>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Results -->
+  <div class="results-panel">
+
+    <!-- Hero result -->
+    <div class="hero-result">
+      <div class="result-label">Net Benefit of Deferral</div>
+      <div class="hero-number pos" id="netBenefit">—</div>
+      <div class="hero-sub">after-tax advantage vs. investing outside the plan</div>
+      <div class="verdict-badge pos" id="verdict">Calculating…</div>
+    </div>
+
+    <!-- Comparison cards -->
+    <div class="card-row">
+      <div class="cmp-card">
+        <div class="cmp-tag deferred">Deferred Path</div>
+        <div class="cmp-value" id="deferredVal">—</div>
+        <div class="cmp-detail">After-tax value at distribution</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-tag nond">Non-Deferred Path</div>
+        <div class="cmp-value" id="nondeferredVal">—</div>
+        <div class="cmp-detail">Taxable account value at year n</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Year-by-Year Growth Comparison</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot d"></div>Deferred (net of tax)</div>
+          <div class="legend-item"><div class="legend-dot n"></div>Non-Deferred</div>
+        </div>
+      </div>
+      <canvas id="growthChart"></canvas>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Break-Even Future Tax Rate</div>
+        <div class="stat-value" id="breakEvenVal">—</div>
+        <div class="stat-detail" id="breakEvenDetail">Deferral is advantageous below this rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Employer Counterparty Risk</div>
+        <div class="risk-row">
+          <div class="risk-dot low" id="riskDot"></div>
+          <div class="stat-detail" id="riskText">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── CTA ── -->
+<div class="cta-wrap">
+  <div class="cta-inner">
+    <div class="cta-copy">
+      <h2>Want a second set of eyes on your numbers?</h2>
+      <p>These scenarios are a starting point. A personalized NQDC review looks at your full comp stack — RSUs, options, severance, spouse income — and builds a distribution ladder designed to avoid bracket spikes.</p>
+    </div>
+    <a href="#" class="cta-btn">Book a 30-Minute Review →</a>
+  </div>
+</div>
+
+<footer>
+  This tool is for educational purposes only and does not constitute tax or legal advice. NQDC plan terms vary by employer — review your plan document and consult your tax advisor before making deferral elections.
+</footer>
+
+<script>
+  // ── State ──
+  const s = {
+    amount: 100000,
+    curTax: 45,
+    futTax: 35,
+    years: 7,
+    planRet: 7,
+    taxRet: 5.5,
+    employer: 'strong'
+  };
+
+  // ── Formatters ──
+  const dollar = v => '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
+  const dollarSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
+  const pct = v => v.toFixed(1) + '%';
+
+  // ── Math ──
+  function calc() {
+    const r  = s.planRet / 100;
+    const rt = s.taxRet  / 100;
+    const tc = s.curTax  / 100;
+    const tf = s.futTax  / 100;
+    const n  = s.years;
+    const A  = s.amount;
+
+    const deferredGross = A * Math.pow(1 + r, n);
+    const deferredNet   = deferredGross * (1 - tf);
+    const nondeferredNet = A * (1 - tc) * Math.pow(1 + rt, n);
+    const benefit = deferredNet - nondeferredNet;
+    // Break-even: deferredGross*(1-T) = nondeferredNet → T = 1 - nondeferredNet/deferredGross
+    const breakEven = (1 - nondeferredNet / deferredGross) * 100;
+
+    // Year-by-year series
+    const dSeries = [], nSeries = [];
+    for (let y = 0; y <= n; y++) {
+      dSeries.push(Math.round(A * Math.pow(1 + r, y) * (1 - tf)));
+      nSeries.push(Math.round(A * (1 - tc) * Math.pow(1 + rt, y)));
+    }
+
+    return { deferredNet, nondeferredNet, benefit, breakEven, dSeries, nSeries };
+  }
+
+  // ── Risk text ──
+  function riskInfo(employer) {
+    const map = {
+      strong:   { cls: 'low',  text: 'Low counterparty risk. Intentional sizing is still prudent — cap exposure relative to your overall net worth.' },
+      moderate: { cls: 'mod',  text: 'Moderate risk. Treat the balance as a credit bet. Set a cap, size it conservatively, and revisit annually.' },
+      atrisk:   { cls: 'high', text: 'Elevated risk. Your balance is an unsecured IOU. Limit exposure significantly and review with your advisor now.' }
+    };
+    return map[employer];
+  }
+
+  // ── Chart ──
+  let chart = null;
+  function drawChart(dSeries, nSeries, years) {
+    const labels = Array.from({ length: years + 1 }, (_, i) => i === 0 ? 'Now' : `Yr ${i}`);
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Deferred (net)',
+            data: dSeries,
+            borderColor: '#c9a84c',
+            backgroundColor: 'rgba(201,168,76,0.07)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Non-Deferred',
+            data: nSeries,
+            borderColor: '#6b8fa8',
+            backgroundColor: 'rgba(107,143,168,0.05)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 350 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#142035',
+            borderColor: '#243858',
+            borderWidth: 1,
+            titleColor: '#7a8fa8',
+            bodyColor: '#f2ede6',
+            titleFont: { family: "'IBM Plex Mono', monospace", size: 10 },
+            bodyFont:  { family: "'IBM Plex Mono', monospace", size: 12 },
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString('en-US')}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(36,56,88,0.45)' },
+            ticks: { color: '#7a8fa8', font: { family: "'IBM Plex Mono', monospace", size: 10 } }
+          },
+          y: {
+            grid: { color: 'rgba(36,56,88,0.45)' },
+            ticks: {
+              color: '#7a8fa8',
+              font: { family: "'IBM Plex Mono', monospace", size: 10 },
+              callback: v => v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : '$'+(v/1000).toFixed(0)+'K'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ── Update ──
+  function update() {
+    const { deferredNet, nondeferredNet, benefit, breakEven, dSeries, nSeries } = calc();
+    const risk = riskInfo(s.employer);
+    const isPos = benefit >= 0;
+
+    // Hero
+    const heroEl = document.getElementById('netBenefit');
+    heroEl.textContent = dollarSigned(benefit);
+    heroEl.className = 'hero-number ' + (isPos ? 'pos' : 'neg');
+
+    const verdictEl = document.getElementById('verdict');
+    verdictEl.textContent = isPos
+      ? 'Deferral adds value in this scenario'
+      : 'Non-deferral outperforms in this scenario';
+    verdictEl.className = 'verdict-badge ' + (isPos ? 'pos' : 'neg');
+
+    // Cards
+    document.getElementById('deferredVal').textContent   = dollar(deferredNet);
+    document.getElementById('nondeferredVal').textContent = dollar(nondeferredNet);
+
+    // Break-even
+    document.getElementById('breakEvenVal').textContent = pct(breakEven);
+    const beMsg = breakEven > s.futTax
+      ? `Your expected rate (${s.futTax}%) is below this — deferral wins`
+      : `Your expected rate (${s.futTax}%) exceeds this — reconsider deferral`;
+    document.getElementById('breakEvenDetail').textContent = beMsg;
+
+    // Risk
+    const dot = document.getElementById('riskDot');
+    dot.className = 'risk-dot ' + risk.cls;
+    document.getElementById('riskText').textContent = risk.text;
+
+    // Chart
+    drawChart(dSeries, nSeries, s.years);
+  }
+
+  // ── Slider wiring ──
+  function wire(sliderId, valId, stateKey, toDisplay) {
+    const slider = document.getElementById(sliderId);
+    const valEl  = document.getElementById(valId);
+
+    slider.addEventListener('input', () => {
+      s[stateKey] = parseFloat(slider.value);
+      valEl.value = toDisplay(s[stateKey]);
+      update();
+    });
+
+    valEl.addEventListener('change', () => {
+      const raw = parseFloat(valEl.value.replace(/[^0-9.]/g, ''));
+      if (!isNaN(raw)) {
+        const clamped = Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), raw));
+        s[stateKey] = clamped;
+        slider.value = clamped;
+        valEl.value = toDisplay(clamped);
+        update();
+      }
+    });
+  }
+
+  wire('amountSlider', 'amountVal', 'amount',  v => '$' + Math.round(v).toLocaleString('en-US'));
+  wire('curTaxSlider', 'curTaxVal',  'curTax',  v => v + '%');
+  wire('futTaxSlider', 'futTaxVal',  'futTax',  v => v + '%');
+  wire('yearsSlider',  'yearsVal',   'years',   v => v + ' yrs');
+  wire('planRetSlider','planRetVal', 'planRet', v => v.toFixed(1) + '%');
+  wire('taxRetSlider', 'taxRetVal',  'taxRet',  v => v.toFixed(1) + '%');
+
+  document.getElementById('empHealth').addEventListener('change', e => {
+    s.employer = e.target.value;
+    update();
+  });
+
+  // ── Init ──
+  update();
+</script>
+</body>
+</html>
