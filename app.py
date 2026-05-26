@@ -33,6 +33,23 @@ with open("nqdc_calculator.html", "r") as f:
 
 st.components.v1.html(html_content, height=1250, scrolling=True)
 
+st.markdown("""
+    <div style="
+        max-width: 520px;
+        margin: 1.5rem auto 0.75rem auto;
+        text-align: center;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        font-size: 0.88rem;
+        color: #7a8fa8;
+        font-weight: 300;
+        line-height: 1.6;
+    ">
+        These scenarios are a starting point. A personalized NQDC review looks at your 
+        full comp stack — RSUs, options, severance, spouse income — and builds a 
+        distribution ladder designed to avoid bracket spikes.
+    </div>
+""", unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns([2, 1, 2])
 with col2:
     st.link_button(
