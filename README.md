@@ -8,7 +8,7 @@ Educational illustration of a nonqualified deferred compensation election: defer
 
 1. In the Squarespace editor, add a **Code** block (not a Markdown block). Leave “Display source” off.
 2. Open `web/nqdc-calculator.html` and paste the **entire file** into the block. If Squarespace drops the outer `<html>`, `<head>`, and `<body>` tags, keep the `<div id="fcm-nqdc">` … `</div>` that remains, including both `<script>` tags and the `<style>` tag. That wrapper is the calculator.
-3. Save and view the page. The illustration runs in the visitor’s browser. There is no signup and no server call.
+3. Save and view the page. The illustration runs in the visitor’s browser. The figures do not require an email. The optional opt-in below the results is the only request the page sends.
 4. CSS and element ids sit under `#fcm-nqdc`, so the block does not restyle the rest of the template.
 
 The page also works if you open the file directly, or if you host the file and embed it:
@@ -21,15 +21,19 @@ Use a taller iframe if the year-by-year table is expanded. A Code Block is the b
 
 ### Optional results email
 
-The results are visible without an address. Below them, “Email me my results” is a normal HTML form. Its action is the constant at the top of the widget:
+The results are visible without an address. Below them, “Email me my results” asks for an optional name and an email. The follow-up link under that form is the contact page only: https://www.forecastcapitalmanagement.com/contact.
+
+The request goes to the constant at the top of the widget:
 
 ```javascript
 var FCM_NQDC_CONFIG = {
-  RESULTS_FORM_ACTION: "https://REPLACE-WITH-YOUR-FORM-ENDPOINT.example/nqdc-results"
+  SUBSCRIBE_ENDPOINT: "https://go.forecastcapitalmanagement.com/api/subscribe"
 };
 ```
 
-Replace that URL with the firm’s form endpoint (a Kit form action or another email-system form that accepts a browser POST). Hidden fields carry the assumptions, the rounded results, a short summary, and the year-by-year table. While the value still contains `REPLACE-WITH`, the form does not submit and explains that delivery is not connected.
+That route is the same one the firm’s own landing page uses. The body is JSON `{"email","name","source":"nqdc-calculator"}`. The route does not send CORS headers, and this page is served from www.forecastcapitalmanagement.com, so the browser would block a normal `application/json` fetch after a preflight. The page instead uses `fetch` with `mode: "no-cors"` and `Content-Type: text/plain;charset=UTF-8`, with the JSON string as the body. That is a simple request: no preflight, and the response is opaque. The page treats a completed send as fire-and-forget and shows “Thanks — check your inbox.”
+
+A blank honeypot field is ignored by visitors. If it is filled, the page does not send. The submit button locks after a send so the same click cannot subscribe twice. An address that is not an email is not sent. Copy and print still hold the full illustration on the page; those figures are not part of the subscribe body.
 
 ### Counting use
 

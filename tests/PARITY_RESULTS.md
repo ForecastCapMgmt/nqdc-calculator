@@ -6,7 +6,7 @@ Each case below was run through the original `calc()` and through `fcmNqdcCalcul
 
 Intentional formula changes: none.
 
-Page file size: 64,117 bytes (62.6 KB).
+Page file size: 64,484 bytes (63.0 KB).
 
 | Case | Deferred, after tax | Taxable path | Net benefit | Break-even rate | Chart points |
 | --- | ---: | ---: | ---: | ---: | ---: |

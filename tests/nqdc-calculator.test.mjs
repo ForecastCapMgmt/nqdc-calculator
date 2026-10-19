@@ -27,7 +27,10 @@ const sandbox = new Function(
     fcmNqdcBreakEvenDetail,
     fcmNqdcRiskInfo,
     fcmNqdcDerived,
-    fcmNqdcSummary
+    fcmNqdcSummary,
+    fcmNqdcIsValidEmail,
+    fcmNqdcPrepareSubscribe,
+    fcmNqdcSendSubscribe
   };
 `
 )();
@@ -172,7 +175,14 @@ test('plain-English summary uses the rounded results and stays descriptive', () 
 test('page contract for Squarespace embed', () => {
   assert.match(page, /id="fcm-nqdc"/);
   assert.match(page, /var FCM_NQDC_CONFIG = \{/);
-  assert.match(page, /RESULTS_FORM_ACTION: "https:\/\/REPLACE-WITH-YOUR-FORM-ENDPOINT\.example\/nqdc-results"/);
+  assert.match(page, /SUBSCRIBE_ENDPOINT: "https:\/\/go\.forecastcapitalmanagement\.com\/api\/subscribe"/);
+  assert.match(page, /mode: 'no-cors'/);
+  assert.match(page, /text\/plain;charset=UTF-8/);
+  assert.match(page, /Thanks — check your inbox\./);
+  assert.match(page, /id="fcm-nqdc-hp"/);
+  assert.doesNotMatch(page, /calendly/i);
+  assert.doesNotMatch(page, /RESULTS_FORM_ACTION/);
+  assert.doesNotMatch(page, /REPLACE-WITH/);
   assert.match(page, /event: 'calculation completed'/);
   assert.match(page, /fcm-nqdc-calculation-completed/);
   assert.match(page, /window\.dataLayer/);
@@ -195,6 +205,76 @@ test('page contract for Squarespace embed', () => {
     for (const sel of head.split(',')) {
       assert.ok(sel.includes('#fcm-nqdc'), 'unscoped selector: ' + sel.trim());
     }
+  }
+});
+
+test('subscribe opt-in never calls the network from tests', async () => {
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = () => {
+    throw new Error('refusing to contact the network from tests');
+  };
+  const mockFetch = (url, init) => {
+    calls.push({ url, init });
+    return Promise.resolve({ type: 'opaque', status: 0 });
+  };
+  try {
+    assert.equal(sandbox.fcmNqdcIsValidEmail('ada@example.com'), true);
+    assert.equal(sandbox.fcmNqdcIsValidEmail('  ada@example.com  '), true);
+    assert.equal(sandbox.fcmNqdcIsValidEmail(''), false);
+    assert.equal(sandbox.fcmNqdcIsValidEmail('not-an-email'), false);
+    assert.equal(sandbox.fcmNqdcIsValidEmail('a@b'), false);
+    assert.equal(sandbox.fcmNqdcIsValidEmail('ada@'), false);
+
+    const missing = sandbox.fcmNqdcPrepareSubscribe({ email: 'nope', name: 'Ada' });
+    assert.equal(missing.send, false);
+    assert.equal(missing.reason, 'invalid-email');
+
+    const bot = sandbox.fcmNqdcPrepareSubscribe({
+      email: 'ada@example.com',
+      name: 'Ada',
+      honeypot: 'https://spam.example'
+    });
+    assert.equal(bot.ok, true);
+    assert.equal(bot.send, false);
+    assert.equal(bot.reason, 'honeypot');
+
+    const ready = sandbox.fcmNqdcPrepareSubscribe({
+      email: ' ada@example.com ',
+      name: '  Ada Lovelace  '
+    });
+    assert.equal(ready.send, true);
+    assert.deepEqual(Object.keys(ready.payload).sort(), ['email', 'name', 'source']);
+    assert.deepEqual(ready.payload, {
+      email: 'ada@example.com',
+      name: 'Ada Lovelace',
+      source: 'nqdc-calculator'
+    });
+
+    const unnamed = sandbox.fcmNqdcPrepareSubscribe({ email: 'ada@example.com', name: '   ' });
+    assert.equal(unnamed.payload.name, '');
+    assert.equal(unnamed.payload.source, 'nqdc-calculator');
+
+    const endpoint = 'https://go.forecastcapitalmanagement.com/api/subscribe';
+    await sandbox.fcmNqdcSendSubscribe(endpoint, ready.payload, mockFetch);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, endpoint);
+    assert.equal(calls[0].init.method, 'POST');
+    assert.equal(calls[0].init.mode, 'no-cors');
+    assert.equal(calls[0].init.credentials, 'omit');
+    assert.equal(calls[0].init.headers['Content-Type'], 'text/plain;charset=UTF-8');
+    assert.equal(calls[0].init.body, JSON.stringify(ready.payload));
+
+    const again = sandbox.fcmNqdcPrepareSubscribe({
+      email: 'ada@example.com',
+      name: 'Ada',
+      alreadySent: true
+    });
+    assert.equal(again.send, false);
+    assert.equal(again.reason, 'already-sent');
+    assert.equal(calls.length, 1);
+  } finally {
+    globalThis.fetch = realFetch;
   }
 });
 

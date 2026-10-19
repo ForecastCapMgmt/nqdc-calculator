@@ -11,19 +11,19 @@
 <!--
   Forecast Capital Management — NQDC scenario calculator
   Paste this entire file into a Squarespace Code Block, or open it on its own.
-  All CSS is scoped under #fcm-nqdc. Edit FCM_NQDC_CONFIG inside #fcm-nqdc
-  to connect the optional results email. See README.md.
+  All CSS is scoped under #fcm-nqdc. The optional email uses FCM_NQDC_CONFIG
+  inside #fcm-nqdc. See README.md.
 -->
 <div id="fcm-nqdc" lang="en">
 <script>
 /**
- * CONFIG — optional "Email me my results" form.
- * Replace RESULTS_FORM_ACTION with the firm's endpoint (Kit form action
- * or another email-system form URL). While the value contains
- * REPLACE-WITH, the form does not submit and no address is sent.
+ * CONFIG — optional "Email me my results" opt-in.
+ * SUBSCRIBE_ENDPOINT is the firm's subscribe route. The page POSTs
+ * JSON text with mode "no-cors" and Content-Type text/plain so the
+ * browser does not send a preflight. That route does not return CORS headers.
  */
 var FCM_NQDC_CONFIG = {
-  RESULTS_FORM_ACTION: "https://REPLACE-WITH-YOUR-FORM-ENDPOINT.example/nqdc-results"
+  SUBSCRIBE_ENDPOINT: "https://go.forecastcapitalmanagement.com/api/subscribe"
 };
 </script>
 <style>
@@ -540,7 +540,9 @@ var FCM_NQDC_CONFIG = {
   margin-top: 0.85rem;
 }
 #fcm-nqdc .fcm-nqdc-form label { display: block; font-size: 0.82rem; color: var(--fcm-muted); width: min(100%, 22rem); }
-#fcm-nqdc .fcm-nqdc-form input[type="email"] {
+#fcm-nqdc .fcm-nqdc-optional { font-style: italic; }
+#fcm-nqdc .fcm-nqdc-form input[type="email"],
+#fcm-nqdc .fcm-nqdc-form input[type="text"] {
   display: block;
   width: 100%;
   margin-top: 0.25rem;
@@ -549,7 +551,20 @@ var FCM_NQDC_CONFIG = {
   background: #fff;
   font-size: 16px;
 }
-#fcm-nqdc .fcm-nqdc-form-note,
+#fcm-nqdc .fcm-nqdc-btn:disabled,
+#fcm-nqdc .fcm-nqdc-btn:disabled:hover {
+  background: #222;
+  color: #fff;
+  opacity: 0.55;
+  cursor: default;
+}
+#fcm-nqdc .fcm-nqdc-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 #fcm-nqdc .fcm-nqdc-form-status { margin-top: 0.55rem; font-size: 0.88rem; font-style: italic; color: var(--fcm-muted); }
 #fcm-nqdc .fcm-nqdc-eyes { margin-top: 0.85rem; font-size: 0.95rem; overflow-wrap: anywhere; }
 #fcm-nqdc .fcm-nqdc-eyes a { color: var(--fcm-gold-ink); overflow-wrap: anywhere; }
@@ -850,28 +865,20 @@ var FCM_NQDC_CONFIG = {
 
 <section class="fcm-nqdc-optin" aria-label="Optional email">
   <h2>Email me my results</h2>
-  <p>Optional. Send this illustration and the full year-by-year breakdown to an email address. The results above are already complete, and nothing is required to use them.</p>
-  <form class="fcm-nqdc-form" id="fcm-nqdc-email-form" method="post" action="" accept-charset="UTF-8">
-    <label>Email address
-      <input id="fcm-nqdc-email" name="email" type="email" required autocomplete="email" placeholder="name@company.com">
+  <p>Optional. Add an email and Forecast will follow up in that inbox. The figures above stay on this page, and you can copy or print them.</p>
+  <form class="fcm-nqdc-form" id="fcm-nqdc-email-form" method="post" action="#" novalidate>
+    <label for="fcm-nqdc-name">Name <span class="fcm-nqdc-optional">(optional)</span>
+      <input id="fcm-nqdc-name" name="name" type="text" autocomplete="name" maxlength="120">
     </label>
-    <button type="submit" class="fcm-nqdc-btn">Email me my results</button>
-    <input type="hidden" name="calculator" value="nqdc">
-    <input type="hidden" name="deferral_amount" id="fcm-nqdc-h-amount">
-    <input type="hidden" name="current_marginal_tax_rate" id="fcm-nqdc-h-cur">
-    <input type="hidden" name="distribution_tax_rate" id="fcm-nqdc-h-fut">
-    <input type="hidden" name="years_until_distribution" id="fcm-nqdc-h-years">
-    <input type="hidden" name="pretax_return_inside_plan" id="fcm-nqdc-h-plan">
-    <input type="hidden" name="aftertax_return_taxable" id="fcm-nqdc-h-taxret">
-    <input type="hidden" name="employer_financial_health" id="fcm-nqdc-h-employer">
-    <input type="hidden" name="deferred_aftertax_value" id="fcm-nqdc-h-deferred">
-    <input type="hidden" name="nondeferred_aftertax_value" id="fcm-nqdc-h-nondeferred">
-    <input type="hidden" name="net_benefit" id="fcm-nqdc-h-benefit">
-    <input type="hidden" name="breakeven_distribution_tax_rate" id="fcm-nqdc-h-breakeven">
-    <input type="hidden" name="summary" id="fcm-nqdc-h-summary">
-    <input type="hidden" name="year_by_year" id="fcm-nqdc-h-years-table">
+    <label for="fcm-nqdc-email">Email address
+      <input id="fcm-nqdc-email" name="email" type="email" required autocomplete="email" maxlength="254" placeholder="name@company.com" inputmode="email">
+    </label>
+    <div class="fcm-nqdc-hp" aria-hidden="true">
+      <label for="fcm-nqdc-hp">Leave this blank</label>
+      <input id="fcm-nqdc-hp" name="fcm_nqdc_hp" type="text" tabindex="-1" autocomplete="off" value="">
+    </div>
+    <button type="submit" class="fcm-nqdc-btn" id="fcm-nqdc-email-submit">Email me my results</button>
   </form>
-  <p class="fcm-nqdc-form-note" id="fcm-nqdc-form-note">This email form is not connected yet. The illustration stays on this page, and an address is not sent, until Forecast replaces the form address in the calculator configuration.</p>
   <p class="fcm-nqdc-form-status" id="fcm-nqdc-form-status" role="status"></p>
   <p class="fcm-nqdc-eyes">Want a second set of eyes? <a href="https://www.forecastcapitalmanagement.com/contact">https://www.forecastcapitalmanagement.com/contact</a></p>
 </section>
@@ -1031,6 +1038,48 @@ var FCM_NQDC_CONFIG = {
       second = 'The two after-tax paths meet in this model when the distribution tax rate is ' + be + '. The rate entered for distribution is ' + entered + '. The rates and returns are assumptions, not a forecast.';
     }
     return { lead: lead, second: second, text: lead + ' ' + second };
+  }
+
+  function fcmNqdcIsValidEmail(email) {
+    var value = String(email || '').trim();
+    if (!value || value.length > 254) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  function fcmNqdcPrepareSubscribe(input) {
+    var details = input || {};
+    if (details.alreadySent) {
+      return { ok: false, send: false, reason: 'already-sent' };
+    }
+    if (String(details.honeypot || '').trim()) {
+      return { ok: true, send: false, reason: 'honeypot' };
+    }
+    var email = String(details.email || '').trim();
+    var name = String(details.name || '').trim();
+    if (!fcmNqdcIsValidEmail(email)) {
+      return { ok: false, send: false, reason: 'invalid-email' };
+    }
+    return {
+      ok: true,
+      send: true,
+      reason: 'ready',
+      payload: {
+        email: email,
+        name: name,
+        source: 'nqdc-calculator'
+      }
+    };
+  }
+
+  function fcmNqdcSendSubscribe(endpoint, payload, fetchImpl) {
+    var send = fetchImpl || fetch;
+    return send(endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload)
+    });
   }
   /* FCM_NQDC_EXPORT_END */
 
@@ -1310,22 +1359,6 @@ var FCM_NQDC_CONFIG = {
     }
   }
 
-  function fillHidden(result, summary) {
-    $('fcm-nqdc-h-amount').value = String(s.amount);
-    $('fcm-nqdc-h-cur').value = String(s.curTax);
-    $('fcm-nqdc-h-fut').value = String(s.futTax);
-    $('fcm-nqdc-h-years').value = String(s.years);
-    $('fcm-nqdc-h-plan').value = String(s.planRet);
-    $('fcm-nqdc-h-taxret').value = String(s.taxRet);
-    $('fcm-nqdc-h-employer').value = s.employer;
-    $('fcm-nqdc-h-deferred').value = String(Math.round(result.deferredNet));
-    $('fcm-nqdc-h-nondeferred').value = String(Math.round(result.nondeferredNet));
-    $('fcm-nqdc-h-benefit').value = String(Math.round(result.benefit));
-    $('fcm-nqdc-h-breakeven').value = Number.isFinite(result.breakEven) ? fcmNqdcPct(result.breakEven) : 'not defined';
-    $('fcm-nqdc-h-summary').value = summary.text;
-    $('fcm-nqdc-h-years-table').value = yearLines(result);
-  }
-
   function schedulePublish(result) {
     window.clearTimeout(publishTimer);
     var delay = publishedOnce ? 600 : 0;
@@ -1401,7 +1434,6 @@ var FCM_NQDC_CONFIG = {
 
     fillReadout();
     fillTable(result);
-    fillHidden(result, summary);
     drawChart(result.dSeries, result.nSeries, s.years);
     schedulePublish(result);
   }
@@ -1530,10 +1562,6 @@ var FCM_NQDC_CONFIG = {
     }
   }
 
-  function isPlaceholder(url) {
-    return !url || /REPLACE-WITH/i.test(url);
-  }
-
   function bindTips() {
     var buttons = root.querySelectorAll('.fcm-nqdc-info');
     Array.prototype.forEach.call(buttons, function (btn) {
@@ -1619,17 +1647,37 @@ var FCM_NQDC_CONFIG = {
 
   var form = $('fcm-nqdc-email-form');
   var config = window.FCM_NQDC_CONFIG || {};
-  var action = config.RESULTS_FORM_ACTION || '';
-  form.action = action;
-  if (!isPlaceholder(action)) {
-    var note = $('fcm-nqdc-form-note');
-    if (note) note.hidden = true;
-  }
+  var subscribeLock = false;
+  var submitBtn = $('fcm-nqdc-email-submit');
   form.addEventListener('submit', function (e) {
-    if (isPlaceholder(form.action)) {
-      e.preventDefault();
-      $('fcm-nqdc-form-status').textContent = 'Email delivery is not connected yet. The illustration above is complete, and this address was not sent.';
+    e.preventDefault();
+    var status = $('fcm-nqdc-form-status');
+    var decision = fcmNqdcPrepareSubscribe({
+      email: $('fcm-nqdc-email').value,
+      name: $('fcm-nqdc-name').value,
+      honeypot: $('fcm-nqdc-hp').value,
+      alreadySent: subscribeLock
+    });
+    if (decision.reason === 'already-sent') return;
+    if (decision.reason === 'invalid-email') {
+      status.textContent = 'Enter an email address like name@company.com.';
+      $('fcm-nqdc-email').focus();
+      return;
     }
+    subscribeLock = true;
+    submitBtn.disabled = true;
+    if (!decision.send) {
+      status.textContent = 'Thanks — check your inbox.';
+      return;
+    }
+    var endpoint = config.SUBSCRIBE_ENDPOINT || '';
+    fcmNqdcSendSubscribe(endpoint, decision.payload).then(function () {
+      status.textContent = 'Thanks — check your inbox.';
+    }, function () {
+      subscribeLock = false;
+      submitBtn.disabled = false;
+      status.textContent = 'That did not send. The illustration is still on this page.';
+    });
   });
 
   bindTips();
