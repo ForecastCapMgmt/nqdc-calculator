@@ -178,7 +178,7 @@ test('page contract for Squarespace embed', () => {
   assert.match(page, /SUBSCRIBE_ENDPOINT: "https:\/\/go\.forecastcapitalmanagement\.com\/api\/subscribe"/);
   assert.match(page, /mode: 'no-cors'/);
   assert.match(page, /text\/plain;charset=UTF-8/);
-  assert.match(page, /Thanks — check your inbox\./);
+  assert.match(page, /You're on the list\. Check your inbox for the Forecast Report\./);
   assert.match(page, /id="fcm-nqdc-hp"/);
   assert.doesNotMatch(page, /calendly/i);
   assert.doesNotMatch(page, /RESULTS_FORM_ACTION/);
@@ -187,7 +187,14 @@ test('page contract for Squarespace embed', () => {
   assert.match(page, /fcm-nqdc-calculation-completed/);
   assert.match(page, /window\.dataLayer/);
   assert.match(page, /https:\/\/www\.forecastcapitalmanagement\.com\/contact/);
-  assert.match(page, /Email me my results/);
+  assert.match(page, /Get The Friday 5/);
+  assert.match(page, /Send me The Friday 5/);
+  assert.match(page, /One short email every Friday/);
+  assert.match(page, /By joining, you agree to receive occasional emails from Forecast Capital Management\. Unsubscribe anytime\./);
+  assert.match(page, /Want a copy\? Print or save this illustration as a PDF\./);
+  assert.match(page, /Print or save PDF/);
+  assert.doesNotMatch(page, /Email me my results/i);
+  assert.doesNotMatch(page, /Thanks — check your inbox/);
   assert.match(
     page,
     /For educational purposes only; not investment, tax, or legal advice\. Forecast Capital Management is a registered investment adviser\. Results are hypothetical estimates based on your inputs\./

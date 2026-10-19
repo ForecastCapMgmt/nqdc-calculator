@@ -17,7 +17,7 @@
 <div id="fcm-nqdc" lang="en">
 <script>
 /**
- * CONFIG — optional "Email me my results" opt-in.
+ * CONFIG — optional Friday 5 signup.
  * SUBSCRIBE_ENDPOINT is the firm's subscribe route. The page POSTs
  * JSON text with mode "no-cors" and Content-Type text/plain so the
  * browser does not send a preflight. That route does not return CORS headers.
@@ -532,6 +532,8 @@ var FCM_NQDC_CONFIG = {
   margin-bottom: 0.35rem;
 }
 #fcm-nqdc .fcm-nqdc-optin > p { color: var(--fcm-muted); font-size: 0.95rem; max-width: 40rem; }
+#fcm-nqdc .fcm-nqdc-fine { margin-top: 0.7rem; font-size: 0.8rem; max-width: 40rem; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-print-note { margin: 0.2rem 0 0.65rem; font-style: italic; font-size: 0.95rem; color: var(--fcm-muted); }
 #fcm-nqdc .fcm-nqdc-form {
   display: flex;
   flex-wrap: wrap;
@@ -629,6 +631,7 @@ var FCM_NQDC_CONFIG = {
   #fcm-nqdc .fcm-nqdc-inputs,
   #fcm-nqdc .fcm-nqdc-optin,
   #fcm-nqdc .fcm-nqdc-actions,
+  #fcm-nqdc .fcm-nqdc-print-note,
   #fcm-nqdc .fcm-nqdc-info,
   #fcm-nqdc .fcm-nqdc-tip,
   #fcm-nqdc .fcm-nqdc-toggle,
@@ -854,6 +857,7 @@ var FCM_NQDC_CONFIG = {
       </div>
     </section>
 
+    <p class="fcm-nqdc-print-note">Want a copy? Print or save this illustration as a PDF.</p>
     <div class="fcm-nqdc-actions">
       <button type="button" class="fcm-nqdc-btn-secondary" id="fcm-nqdc-copy">Copy summary</button>
       <button type="button" class="fcm-nqdc-btn-secondary" id="fcm-nqdc-share">Copy link to this illustration</button>
@@ -863,9 +867,9 @@ var FCM_NQDC_CONFIG = {
   </div>
 </div>
 
-<section class="fcm-nqdc-optin" aria-label="Optional email">
-  <h2>Email me my results</h2>
-  <p>Optional. Add an email and Forecast will follow up in that inbox. The figures above stay on this page, and you can copy or print them.</p>
+<section class="fcm-nqdc-optin" aria-label="Get The Friday 5">
+  <h2>Get The Friday 5</h2>
+  <p>One short email every Friday: what moved markets in plain English, plus a podcast, a read, a live-well tip, and a quote worth thinking about. Five minutes. As a bonus, we'll send you the most recent Forecast Report.</p>
   <form class="fcm-nqdc-form" id="fcm-nqdc-email-form" method="post" action="#" novalidate>
     <label for="fcm-nqdc-name">Name <span class="fcm-nqdc-optional">(optional)</span>
       <input id="fcm-nqdc-name" name="name" type="text" autocomplete="name" maxlength="120">
@@ -877,8 +881,9 @@ var FCM_NQDC_CONFIG = {
       <label for="fcm-nqdc-hp">Leave this blank</label>
       <input id="fcm-nqdc-hp" name="fcm_nqdc_hp" type="text" tabindex="-1" autocomplete="off" value="">
     </div>
-    <button type="submit" class="fcm-nqdc-btn" id="fcm-nqdc-email-submit">Email me my results</button>
+    <button type="submit" class="fcm-nqdc-btn" id="fcm-nqdc-email-submit">Send me The Friday 5</button>
   </form>
+  <p class="fcm-nqdc-fine">By joining, you agree to receive occasional emails from Forecast Capital Management. Unsubscribe anytime.</p>
   <p class="fcm-nqdc-form-status" id="fcm-nqdc-form-status" role="status"></p>
   <p class="fcm-nqdc-eyes">Want a second set of eyes? <a href="https://www.forecastcapitalmanagement.com/contact">https://www.forecastcapitalmanagement.com/contact</a></p>
 </section>
@@ -1667,12 +1672,12 @@ var FCM_NQDC_CONFIG = {
     subscribeLock = true;
     submitBtn.disabled = true;
     if (!decision.send) {
-      status.textContent = 'Thanks — check your inbox.';
+      status.textContent = "You're on the list. Check your inbox for the Forecast Report.";
       return;
     }
     var endpoint = config.SUBSCRIBE_ENDPOINT || '';
     fcmNqdcSendSubscribe(endpoint, decision.payload).then(function () {
-      status.textContent = 'Thanks — check your inbox.';
+      status.textContent = "You're on the list. Check your inbox for the Forecast Report.";
     }, function () {
       subscribeLock = false;
       submitBtn.disabled = false;

@@ -8,7 +8,7 @@ Educational illustration of a nonqualified deferred compensation election: defer
 
 1. In the Squarespace editor, add a **Code** block (not a Markdown block). Leave “Display source” off.
 2. Open `web/nqdc-calculator.html` and paste the **entire file** into the block. If Squarespace drops the outer `<html>`, `<head>`, and `<body>` tags, keep the `<div id="fcm-nqdc">` … `</div>` that remains, including both `<script>` tags and the `<style>` tag. That wrapper is the calculator.
-3. Save and view the page. The illustration runs in the visitor’s browser. The figures do not require an email. The optional opt-in below the results is the only request the page sends.
+3. Save and view the page. The illustration runs in the visitor’s browser. The figures do not require an email. The optional Friday 5 signup below the results is the only request the page sends.
 4. CSS and element ids sit under `#fcm-nqdc`, so the block does not restyle the rest of the template.
 
 The page also works if you open the file directly, or if you host the file and embed it:
@@ -19,9 +19,9 @@ The page also works if you open the file directly, or if you host the file and e
 
 Use a taller iframe if the year-by-year table is expanded. A Code Block is the better fit, because the block grows with the content.
 
-### Optional results email
+### The Friday 5
 
-The results are visible without an address. Below them, “Email me my results” asks for an optional name and an email. The follow-up link under that form is the contact page only: https://www.forecastcapitalmanagement.com/contact.
+The illustration does not need an email. To keep the figures, use “Print or save PDF.” Below that, “Get The Friday 5” offers the firm’s Friday note: one short email each Friday, plus the most recent Forecast Report as a bonus. The button reads “Send me The Friday 5.” Joining agrees to occasional emails from Forecast Capital Management, and the note says unsubscribe anytime. After a send, the page says “You're on the list. Check your inbox for the Forecast Report.” The follow-up link under the form is the contact page only: https://www.forecastcapitalmanagement.com/contact.
 
 The request goes to the constant at the top of the widget:
 
@@ -31,9 +31,9 @@ var FCM_NQDC_CONFIG = {
 };
 ```
 
-That route is the same one the firm’s own landing page uses. The body is JSON `{"email","name","source":"nqdc-calculator"}`. The route does not send CORS headers, and this page is served from www.forecastcapitalmanagement.com, so the browser would block a normal `application/json` fetch after a preflight. The page instead uses `fetch` with `mode: "no-cors"` and `Content-Type: text/plain;charset=UTF-8`, with the JSON string as the body. That is a simple request: no preflight, and the response is opaque. The page treats a completed send as fire-and-forget and shows “Thanks — check your inbox.”
+That route is the same one the firm’s own landing page uses. The body is JSON `{"email","name","source":"nqdc-calculator"}`. The route does not send CORS headers, and this page is served from www.forecastcapitalmanagement.com, so the browser would block a normal `application/json` fetch after a preflight. The page instead uses `fetch` with `mode: "no-cors"` and `Content-Type: text/plain;charset=UTF-8`, with the JSON string as the body. That is a simple request: no preflight, and the response is opaque. The page treats a completed send as fire-and-forget.
 
-A blank honeypot field is ignored by visitors. If it is filled, the page does not send. The submit button locks after a send so the same click cannot subscribe twice. An address that is not an email is not sent. Copy and print still hold the full illustration on the page; those figures are not part of the subscribe body.
+A blank honeypot field is ignored by visitors. If it is filled, the page does not send. The submit button locks after a send so the same click cannot subscribe twice. An address that is not an email is not sent. The subscribe body is only the name, the email, and the source. It does not include the illustration.
 
 ### Counting use
 
