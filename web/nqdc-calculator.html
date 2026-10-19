@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NQDC Scenario Calculator — Forecast Capital Management</title>
+  <meta name="description" content="Educational illustration of nonqualified deferred compensation: defer pre-tax pay, or take it and invest the after-tax amount. Hypothetical results from your assumptions.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+</head>
+<body>
+<!--
+  Forecast Capital Management — NQDC scenario calculator
+  Paste this entire file into a Squarespace Code Block, or open it on its own.
+  All CSS is scoped under #fcm-nqdc. The optional email uses FCM_NQDC_CONFIG
+  inside #fcm-nqdc. See README.md.
+-->
+<div id="fcm-nqdc" lang="en">
+<script>
+/**
+ * CONFIG — optional Friday 5 signup.
+ * SUBSCRIBE_ENDPOINT is the firm's subscribe route. The page POSTs
+ * JSON text with mode "no-cors" and Content-Type text/plain so the
+ * browser does not send a preflight. That route does not return CORS headers.
+ */
+var FCM_NQDC_CONFIG = {
+  SUBSCRIBE_ENDPOINT: "https://go.forecastcapitalmanagement.com/api/subscribe"
+};
+</script>
+<style>
+#fcm-nqdc {
+  --fcm-ink: #222;
+  --fcm-muted: #5e5954;
+  --fcm-faint: #8a837a;
+  --fcm-line: #e6e0d6;
+  --fcm-wash: #faf8f5;
+  --fcm-gold: #c6a15a;
+  --fcm-gold-ink: #7a5c28;
+  --fcm-neg: #7d2e2e;
+  --fcm-serif: "Cormorant Garamond", Palatino, "Palatino Linotype", Georgia, serif;
+  --fcm-body: Lora, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  container-type: inline-size;
+  container-name: fcmnqdc;
+  isolation: isolate;
+  position: relative;
+  box-sizing: border-box;
+  max-width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.75rem;
+  background: #fff;
+  color: var(--fcm-ink);
+  font-family: var(--fcm-body);
+  font-size: 17px;
+  line-height: 1.6;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+#fcm-nqdc *,
+#fcm-nqdc *::before,
+#fcm-nqdc *::after { box-sizing: border-box; }
+#fcm-nqdc h1,
+#fcm-nqdc h2,
+#fcm-nqdc h3,
+#fcm-nqdc p { margin: 0; padding: 0; }
+#fcm-nqdc button,
+#fcm-nqdc input,
+#fcm-nqdc select { font-family: var(--fcm-body); color: var(--fcm-ink); }
+#fcm-nqdc a { color: var(--fcm-ink); }
+#fcm-nqdc :focus-visible { outline: 2px solid var(--fcm-gold-ink); outline-offset: 2px; }
+
+#fcm-nqdc .fcm-nqdc-mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--fcm-line);
+}
+#fcm-nqdc .fcm-nqdc-brand {
+  font-family: var(--fcm-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+#fcm-nqdc .fcm-nqdc-brand-sub {
+  margin-top: 0.15rem;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--fcm-muted);
+}
+#fcm-nqdc .fcm-nqdc-pill {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+  white-space: nowrap;
+}
+
+#fcm-nqdc .fcm-nqdc-intro { padding: 1.6rem 0 1.35rem; max-width: 40rem; }
+#fcm-nqdc .fcm-nqdc-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fcm-gold-ink);
+  margin-bottom: 0.55rem;
+}
+#fcm-nqdc .fcm-nqdc-title {
+  font-family: var(--fcm-serif);
+  font-weight: 500;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  color: #222;
+}
+#fcm-nqdc .fcm-nqdc-title em { font-style: italic; font-weight: 500; }
+#fcm-nqdc .fcm-nqdc-rule {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--fcm-gold);
+  border: 0;
+  margin: 0.9rem 0 0.85rem;
+}
+#fcm-nqdc .fcm-nqdc-lede { color: var(--fcm-muted); font-size: 1rem; max-width: 38rem; }
+
+#fcm-nqdc .fcm-nqdc-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+  grid-template-areas: "inputs hero" "inputs rest";
+  gap: 1.25rem 1.75rem;
+  align-items: start;
+}
+#fcm-nqdc .fcm-nqdc-inputs { grid-area: inputs; }
+#fcm-nqdc .fcm-nqdc-hero { grid-area: hero; }
+#fcm-nqdc .fcm-nqdc-rest { grid-area: rest; display: flex; flex-direction: column; gap: 1rem; }
+
+#fcm-nqdc .fcm-nqdc-panel {
+  background: #fff;
+  border: 1px solid var(--fcm-line);
+  padding: 1.15rem 1.15rem 1.25rem;
+}
+#fcm-nqdc .fcm-nqdc-panel-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--fcm-line);
+  margin-bottom: 0.35rem;
+}
+#fcm-nqdc .fcm-nqdc-defaults {
+  margin: 0.75rem 0 0.35rem;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--fcm-muted);
+}
+
+#fcm-nqdc .fcm-nqdc-field { padding: 0.85rem 0 0.35rem; border-bottom: 1px solid var(--fcm-line); }
+#fcm-nqdc .fcm-nqdc-field:last-of-type { border-bottom: 0; }
+#fcm-nqdc .fcm-nqdc-field-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.45rem;
+}
+#fcm-nqdc .fcm-nqdc-field-top label {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+#fcm-nqdc .fcm-nqdc-val {
+  width: 7.4rem;
+  max-width: 46%;
+  flex: 0 0 auto;
+  text-align: right;
+  background: var(--fcm-wash);
+  border: 1px solid var(--fcm-line);
+  border-radius: 0;
+  padding: 0.35rem 0.45rem;
+  font-size: 16px;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+#fcm-nqdc .fcm-nqdc-info {
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid var(--fcm-gold);
+  background: #fff;
+  color: var(--fcm-gold-ink);
+  font-family: var(--fcm-serif);
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+#fcm-nqdc .fcm-nqdc-info[aria-expanded="true"] { background: var(--fcm-wash); }
+#fcm-nqdc .fcm-nqdc-tip {
+  margin: 0.45rem 0 0.2rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--fcm-wash);
+  border-left: 2px solid var(--fcm-gold);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--fcm-muted);
+}
+#fcm-nqdc .fcm-nqdc-hint {
+  min-height: 0;
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: var(--fcm-neg);
+}
+#fcm-nqdc .fcm-nqdc-hint:empty { display: none; }
+
+#fcm-nqdc input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.25rem;
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+}
+#fcm-nqdc input[type="range"]:focus { outline: none; }
+#fcm-nqdc input[type="range"]::-webkit-slider-runnable-track {
+  height: 1px;
+  background: #cfc6b8;
+}
+#fcm-nqdc input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--fcm-gold-ink);
+  box-shadow: none;
+}
+#fcm-nqdc input[type="range"]::-moz-range-track {
+  height: 1px;
+  background: #cfc6b8;
+  border: 0;
+}
+#fcm-nqdc input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--fcm-gold-ink);
+}
+
+#fcm-nqdc .fcm-nqdc-select-label {
+  display: block;
+  flex: 1;
+  font-size: 0.95rem;
+  margin: 0;
+}
+#fcm-nqdc .fcm-nqdc-field-top + select.fcm-nqdc-select { margin-top: 0.45rem; }
+#fcm-nqdc select.fcm-nqdc-select {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--fcm-line);
+  border-radius: 0;
+  padding: 0.55rem 0.5rem;
+  font-size: 16px;
+  cursor: pointer;
+}
+#fcm-nqdc .fcm-nqdc-reset {
+  margin-top: 0.9rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--fcm-muted);
+  font-style: italic;
+  font-size: 0.92rem;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+#fcm-nqdc .fcm-nqdc-hero {
+  position: relative;
+  text-align: center;
+  padding: 1.35rem 1.15rem 1.2rem;
+  border: 1px solid var(--fcm-line);
+  background: #fff;
+}
+#fcm-nqdc .fcm-nqdc-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--fcm-gold);
+}
+#fcm-nqdc .fcm-nqdc-result-label {
+  font-family: var(--fcm-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+  margin-bottom: 0.35rem;
+}
+#fcm-nqdc p,
+#fcm-nqdc li,
+#fcm-nqdc label,
+#fcm-nqdc dt,
+#fcm-nqdc dd,
+#fcm-nqdc caption { font-family: var(--fcm-body); }
+#fcm-nqdc .fcm-nqdc-hero-num {
+  font-family: var(--fcm-serif);
+  font-weight: 500;
+  font-size: clamp(2.7rem, 6vw, 4.1rem);
+  line-height: 0.95;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.02em;
+}
+#fcm-nqdc .fcm-nqdc-hero-num.is-pos { color: var(--fcm-gold-ink); }
+#fcm-nqdc .fcm-nqdc-hero-num.is-neg { color: var(--fcm-neg); }
+#fcm-nqdc .fcm-nqdc-hero-sub {
+  margin-top: 0.45rem;
+  font-style: italic;
+  color: var(--fcm-muted);
+  font-size: 0.95rem;
+}
+#fcm-nqdc .fcm-nqdc-verdict {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--fcm-line);
+  font-size: 0.86rem;
+}
+#fcm-nqdc .fcm-nqdc-verdict.is-pos { border-color: var(--fcm-gold); color: var(--fcm-gold-ink); }
+#fcm-nqdc .fcm-nqdc-verdict.is-neg { border-color: #e4c8c8; color: var(--fcm-neg); }
+
+#fcm-nqdc .fcm-nqdc-summary {
+  padding: 1rem 1.1rem 1.05rem;
+  background: var(--fcm-wash);
+  border-left: 2px solid var(--fcm-gold);
+}
+#fcm-nqdc .fcm-nqdc-summary h2 {
+  font-family: var(--fcm-serif);
+  font-weight: 600;
+  font-size: 1.55rem;
+  line-height: 1.15;
+  margin-bottom: 0.4rem;
+}
+#fcm-nqdc .fcm-nqdc-summary p { font-size: 0.98rem; }
+#fcm-nqdc .fcm-nqdc-summary p + p { margin-top: 0.55rem; }
+
+#fcm-nqdc .fcm-nqdc-cards,
+#fcm-nqdc .fcm-nqdc-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+#fcm-nqdc .fcm-nqdc-card h3 {
+  font-family: var(--fcm-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+  margin-bottom: 0.35rem;
+}
+#fcm-nqdc .fcm-nqdc-card h3 span {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+#fcm-nqdc .fcm-nqdc-dot-d { background: var(--fcm-gold-ink); }
+#fcm-nqdc .fcm-nqdc-dot-n { background: #222; }
+#fcm-nqdc .fcm-nqdc-figure {
+  font-family: var(--fcm-serif);
+  font-size: 1.85rem;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+#fcm-nqdc .fcm-nqdc-card p,
+#fcm-nqdc .fcm-nqdc-stat p { margin-top: 0.3rem; font-size: 0.86rem; color: var(--fcm-muted); font-style: italic; }
+
+#fcm-nqdc .fcm-nqdc-bars { display: flex; flex-direction: column; gap: 0.45rem; padding: 0.15rem 0.1rem 0.2rem; }
+#fcm-nqdc .fcm-nqdc-bar-row { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.6rem; align-items: center; }
+#fcm-nqdc .fcm-nqdc-bar-name { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-bar-track { height: 8px; background: var(--fcm-wash); border: 1px solid var(--fcm-line); }
+#fcm-nqdc .fcm-nqdc-bar-fill { display: block; height: 100%; width: 0; }
+#fcm-nqdc .fcm-nqdc-bar-fill-d { background: var(--fcm-gold); }
+#fcm-nqdc .fcm-nqdc-bar-fill-n { background: #222; }
+
+#fcm-nqdc .fcm-nqdc-chart-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+#fcm-nqdc .fcm-nqdc-chart-head h3 {
+  font-family: var(--fcm-serif);
+  font-weight: 600;
+  font-size: 1.35rem;
+}
+#fcm-nqdc .fcm-nqdc-legend { display: flex; gap: 0.9rem; font-size: 0.78rem; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-legend i {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.3rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+#fcm-nqdc .fcm-nqdc-chart-box { position: relative; height: 240px; }
+#fcm-nqdc .fcm-nqdc-chart-box canvas { width: 100% !important; height: 100% !important; }
+#fcm-nqdc .fcm-nqdc-caption,
+#fcm-nqdc .fcm-nqdc-frac {
+  margin-top: 0.55rem;
+  font-size: 0.84rem;
+  font-style: italic;
+  color: var(--fcm-muted);
+}
+#fcm-nqdc .fcm-nqdc-fallback { margin-top: 0.45rem; font-size: 0.88rem; color: var(--fcm-muted); }
+
+#fcm-nqdc .fcm-nqdc-risk-row { display: flex; gap: 0.55rem; align-items: flex-start; }
+#fcm-nqdc .fcm-nqdc-risk-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: #8a837a;
+}
+#fcm-nqdc .fcm-nqdc-risk-dot.is-low { background: #3f6b4e; }
+#fcm-nqdc .fcm-nqdc-risk-dot.is-mod { background: var(--fcm-gold-ink); }
+#fcm-nqdc .fcm-nqdc-risk-dot.is-high { background: var(--fcm-neg); }
+#fcm-nqdc .fcm-nqdc-risk-title {
+  font-family: var(--fcm-serif);
+  font-size: 1.45rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+#fcm-nqdc .fcm-nqdc-derived { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+#fcm-nqdc .fcm-nqdc-derived .fcm-nqdc-figure { font-size: 1.45rem; }
+
+#fcm-nqdc .fcm-nqdc-readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+}
+#fcm-nqdc .fcm-nqdc-readout div { min-width: 0; }
+#fcm-nqdc .fcm-nqdc-readout dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+}
+#fcm-nqdc .fcm-nqdc-readout dd {
+  margin: 0 0 0.35rem;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+#fcm-nqdc .fcm-nqdc-toggle,
+#fcm-nqdc .fcm-nqdc-btn,
+#fcm-nqdc .fcm-nqdc-btn-secondary {
+  cursor: pointer;
+  border-radius: 0;
+  font-size: 0.95rem;
+}
+#fcm-nqdc .fcm-nqdc-toggle {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--fcm-ink);
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+#fcm-nqdc .fcm-nqdc-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+#fcm-nqdc .fcm-nqdc-btn,
+#fcm-nqdc .fcm-nqdc-btn-secondary {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #222;
+}
+#fcm-nqdc .fcm-nqdc-btn { background: #222; color: #fff; }
+#fcm-nqdc .fcm-nqdc-btn-secondary { background: #fff; color: #222; }
+#fcm-nqdc .fcm-nqdc-btn:hover { background: #fff; color: #222; }
+#fcm-nqdc .fcm-nqdc-btn-secondary:hover { background: var(--fcm-wash); }
+#fcm-nqdc .fcm-nqdc-action-status { min-height: 1.2em; font-size: 0.86rem; font-style: italic; color: var(--fcm-muted); }
+
+#fcm-nqdc .fcm-nqdc-table-wrap { overflow-x: auto; margin-top: 0.75rem; }
+#fcm-nqdc .fcm-nqdc-table-wrap.is-collapsed { display: none; }
+#fcm-nqdc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: 0.88rem;
+}
+#fcm-nqdc th,
+#fcm-nqdc td { padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--fcm-line); text-align: right; }
+#fcm-nqdc th:first-child,
+#fcm-nqdc td:first-child { text-align: left; }
+#fcm-nqdc th {
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fcm-muted);
+}
+#fcm-nqdc caption {
+  caption-side: bottom;
+  text-align: left;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--fcm-muted);
+  padding-top: 0.45rem;
+}
+
+#fcm-nqdc .fcm-nqdc-optin {
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--fcm-gold);
+}
+#fcm-nqdc .fcm-nqdc-optin h2 {
+  font-family: var(--fcm-serif);
+  font-weight: 600;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+#fcm-nqdc .fcm-nqdc-optin > p { color: var(--fcm-muted); font-size: 0.95rem; max-width: 40rem; }
+#fcm-nqdc .fcm-nqdc-fine { margin-top: 0.7rem; font-size: 0.8rem; max-width: 40rem; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-print-note { margin: 0.2rem 0 0.65rem; font-style: italic; font-size: 0.95rem; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-end;
+  margin-top: 0.85rem;
+}
+#fcm-nqdc .fcm-nqdc-form label { display: block; font-size: 0.82rem; color: var(--fcm-muted); width: min(100%, 22rem); }
+#fcm-nqdc .fcm-nqdc-optional { font-style: italic; }
+#fcm-nqdc .fcm-nqdc-form input[type="email"],
+#fcm-nqdc .fcm-nqdc-form input[type="text"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--fcm-line);
+  background: #fff;
+  font-size: 16px;
+}
+#fcm-nqdc .fcm-nqdc-btn:disabled,
+#fcm-nqdc .fcm-nqdc-btn:disabled:hover {
+  background: #222;
+  color: #fff;
+  opacity: 0.55;
+  cursor: default;
+}
+#fcm-nqdc .fcm-nqdc-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+#fcm-nqdc .fcm-nqdc-form-status { margin-top: 0.55rem; font-size: 0.88rem; font-style: italic; color: var(--fcm-muted); }
+#fcm-nqdc .fcm-nqdc-eyes { margin-top: 0.85rem; font-size: 0.95rem; overflow-wrap: anywhere; }
+#fcm-nqdc .fcm-nqdc-eyes a { color: var(--fcm-gold-ink); overflow-wrap: anywhere; }
+
+#fcm-nqdc .fcm-nqdc-disclaimer {
+  margin-top: 1.35rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--fcm-line);
+  font-size: 0.82rem;
+  color: var(--fcm-muted);
+  max-width: 46rem;
+}
+#fcm-nqdc .fcm-nqdc-disclaimer p + p { margin-top: 0.45rem; }
+
+#fcm-nqdc .fcm-nqdc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@container fcmnqdc (min-width: 821px) {
+  #fcm-nqdc .fcm-nqdc-inputs { position: sticky; top: 0.75rem; }
+}
+@container fcmnqdc (max-width: 820px) {
+  #fcm-nqdc .fcm-nqdc-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "hero" "inputs" "rest";
+  }
+  #fcm-nqdc .fcm-nqdc-hero { position: sticky; top: 0; z-index: 3; background: #fff; box-shadow: 0 1px 0 var(--fcm-line); }
+  #fcm-nqdc .fcm-nqdc-hero-num { font-size: 2.5rem; }
+  #fcm-nqdc .fcm-nqdc-cards,
+  #fcm-nqdc .fcm-nqdc-stats,
+  #fcm-nqdc .fcm-nqdc-derived,
+  #fcm-nqdc .fcm-nqdc-readout { grid-template-columns: 1fr; }
+  #fcm-nqdc .fcm-nqdc-mast { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+  #fcm-nqdc .fcm-nqdc-bar-row { grid-template-columns: 6.2rem 1fr; }
+}
+@media (min-width: 821px) {
+  #fcm-nqdc .fcm-nqdc-inputs { position: sticky; top: 0.75rem; }
+}
+@media (max-width: 820px) {
+  #fcm-nqdc .fcm-nqdc-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "hero" "inputs" "rest";
+  }
+  #fcm-nqdc .fcm-nqdc-hero { position: sticky; top: 0; z-index: 3; background: #fff; box-shadow: 0 1px 0 var(--fcm-line); }
+  #fcm-nqdc .fcm-nqdc-hero-num { font-size: 2.5rem; }
+  #fcm-nqdc .fcm-nqdc-cards,
+  #fcm-nqdc .fcm-nqdc-stats,
+  #fcm-nqdc .fcm-nqdc-derived,
+  #fcm-nqdc .fcm-nqdc-readout { grid-template-columns: 1fr; }
+  #fcm-nqdc .fcm-nqdc-mast { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+  #fcm-nqdc .fcm-nqdc-bar-row { grid-template-columns: 6.2rem 1fr; }
+}
+@media print {
+  #fcm-nqdc .fcm-nqdc-inputs,
+  #fcm-nqdc .fcm-nqdc-optin,
+  #fcm-nqdc .fcm-nqdc-actions,
+  #fcm-nqdc .fcm-nqdc-print-note,
+  #fcm-nqdc .fcm-nqdc-info,
+  #fcm-nqdc .fcm-nqdc-tip,
+  #fcm-nqdc .fcm-nqdc-toggle,
+  #fcm-nqdc input[type="range"] { display: none !important; }
+  #fcm-nqdc .fcm-nqdc-table-wrap.is-collapsed { display: block !important; }
+  #fcm-nqdc .fcm-nqdc-hero { position: static; box-shadow: none; }
+  #fcm-nqdc { max-width: none; }
+}
+</style>
+
+<header class="fcm-nqdc-mast">
+  <div>
+    <div class="fcm-nqdc-brand">Forecast Capital Management</div>
+    <div class="fcm-nqdc-brand-sub">Educational tool</div>
+  </div>
+  <div class="fcm-nqdc-pill">Hypothetical illustration</div>
+</header>
+
+<div class="fcm-nqdc-intro">
+  <p class="fcm-nqdc-kicker">Nonqualified deferred compensation</p>
+  <h1 class="fcm-nqdc-title">Defer, or <em>take it now?</em></h1>
+  <hr class="fcm-nqdc-rule">
+  <p class="fcm-nqdc-lede">An educational illustration of one hypothetical election: defer pre-tax compensation inside a nonqualified plan, or take it as pay, pay tax, and invest the remainder in a taxable account. The figures update as the assumptions change. No signup is required.</p>
+</div>
+
+<div class="fcm-nqdc-layout">
+  <aside class="fcm-nqdc-inputs fcm-nqdc-panel" aria-label="Assumptions">
+    <div class="fcm-nqdc-panel-label">Assumptions</div>
+    <p class="fcm-nqdc-defaults">Starting point: a higher tax rate now than at distribution, over seven years. Change any figure. These are not a forecast of your rates or returns.</p>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-amount-label" for="fcm-nqdc-amount-val">Amount to defer (pre-tax)</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-amount-tip" aria-label="Explain amount to defer">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-amount-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="$100,000" aria-describedby="fcm-nqdc-amount-tip fcm-nqdc-amount-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-amount" min="5000" max="500000" step="5000" value="100000" aria-labelledby="fcm-nqdc-amount-label">
+      <p id="fcm-nqdc-amount-tip" class="fcm-nqdc-tip" hidden>The pre-tax compensation in this one illustration, from $5,000 to $500,000. It is the amount placed in the plan, not a suggestion of how much to defer. Type a figure or use the slider.</p>
+      <p id="fcm-nqdc-amount-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-cur-label" for="fcm-nqdc-cur-val">Marginal tax rate if taken this year</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-cur-tip" aria-label="Explain current marginal tax rate">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-cur-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="45%" aria-describedby="fcm-nqdc-cur-tip fcm-nqdc-cur-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-cur" min="20" max="60" step="1" value="45" aria-labelledby="fcm-nqdc-cur-label">
+      <p id="fcm-nqdc-cur-tip" class="fcm-nqdc-tip" hidden>The combined rate assumed on this dollar if it is taken as pay now — whatever mix of federal, state, and other tax you want the illustration to use. Enter 45 for 45%, not 0.45. Allowed range: 20% to 60%. This is an assumption, not a tax calculation.</p>
+      <p id="fcm-nqdc-cur-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-fut-label" for="fcm-nqdc-fut-val">Marginal tax rate at distribution</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-fut-tip" aria-label="Explain distribution tax rate">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-fut-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="35%" aria-describedby="fcm-nqdc-fut-tip fcm-nqdc-fut-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-fut" min="20" max="60" step="1" value="35" aria-labelledby="fcm-nqdc-fut-label">
+      <p id="fcm-nqdc-fut-tip" class="fcm-nqdc-tip" hidden>The rate assumed when the plan pays the balance out and it is taxed. The illustration is sensitive to this guess. Enter 35 for 35%. Allowed range: 20% to 60%.</p>
+      <p id="fcm-nqdc-fut-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-years-label" for="fcm-nqdc-years-val">Years until distribution</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-years-tip" aria-label="Explain years until distribution">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-years-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="7 years" aria-describedby="fcm-nqdc-years-tip fcm-nqdc-years-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-years" min="1" max="30" step="1" value="7" aria-labelledby="fcm-nqdc-years-label">
+      <p id="fcm-nqdc-years-tip" class="fcm-nqdc-tip" hidden>How long the balance stays in the plan before it is paid and taxed in this illustration. Allowed range: 1 to 30 years.</p>
+      <p id="fcm-nqdc-years-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-plan-label" for="fcm-nqdc-plan-val">Pre-tax return inside the plan</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-plan-tip" aria-label="Explain pre-tax return inside the plan">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-plan-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="7.0%" aria-describedby="fcm-nqdc-plan-tip fcm-nqdc-plan-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-plan" min="1" max="15" step="0.5" value="7" aria-labelledby="fcm-nqdc-plan-label">
+      <p id="fcm-nqdc-plan-tip" class="fcm-nqdc-tip" hidden>Hypothetical annual growth of the deferred balance before the tax at distribution. In this model the plan balance is not taxed each year. Allowed range: 1% to 15%.</p>
+      <p id="fcm-nqdc-plan-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label id="fcm-nqdc-taxret-label" for="fcm-nqdc-taxret-val">After-tax return in a taxable account</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-taxret-tip" aria-label="Explain after-tax return">i</button>
+        <input class="fcm-nqdc-val" id="fcm-nqdc-taxret-val" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" value="5.5%" aria-describedby="fcm-nqdc-taxret-tip fcm-nqdc-taxret-hint">
+      </div>
+      <input type="range" id="fcm-nqdc-taxret" min="1" max="15" step="0.5" value="5.5" aria-labelledby="fcm-nqdc-taxret-label">
+      <p id="fcm-nqdc-taxret-tip" class="fcm-nqdc-tip" hidden>Hypothetical annual growth of money invested after paying tax on the compensation today. Enter an after-tax figure. The model compounds that rate as a constant. It does not itemize dividends, interest, or capital gains. Allowed range: 1% to 15%.</p>
+      <p id="fcm-nqdc-taxret-hint" class="fcm-nqdc-hint" role="status"></p>
+    </div>
+
+    <div class="fcm-nqdc-field">
+      <div class="fcm-nqdc-field-top">
+        <label class="fcm-nqdc-select-label" for="fcm-nqdc-employer">Employer financial health</label>
+        <button type="button" class="fcm-nqdc-info" aria-expanded="false" aria-controls="fcm-nqdc-employer-tip" aria-label="Explain employer financial health">i</button>
+      </div>
+      <select id="fcm-nqdc-employer" class="fcm-nqdc-select">
+        <option value="strong">Strong — large, stable public company</option>
+        <option value="moderate">Moderate — smaller or private company</option>
+        <option value="atrisk">At risk — financial uncertainty present</option>
+      </select>
+      <p id="fcm-nqdc-employer-tip" class="fcm-nqdc-tip" hidden>NQDC balances are unsecured promises of the employer. This selector names that credit risk. It does not change the dollar math, and it is not a rating of any company.</p>
+    </div>
+
+    <button type="button" class="fcm-nqdc-reset" id="fcm-nqdc-reset">Reset assumptions</button>
+  </aside>
+
+  <section class="fcm-nqdc-hero" id="fcm-nqdc-hero" aria-label="Illustrated net benefit">
+    <div class="fcm-nqdc-result-label">Illustrated net benefit of deferral</div>
+    <div class="fcm-nqdc-hero-num is-pos" id="fcm-nqdc-benefit">—</div>
+    <p class="fcm-nqdc-hero-sub">After-tax difference versus investing outside the plan</p>
+    <div class="fcm-nqdc-verdict is-pos" id="fcm-nqdc-verdict">Illustration updates as assumptions change</div>
+  </section>
+
+  <div class="fcm-nqdc-rest">
+    <section class="fcm-nqdc-summary" aria-label="What this means">
+      <h2>What this means</h2>
+      <p id="fcm-nqdc-summary-lead"></p>
+      <p id="fcm-nqdc-summary-second"></p>
+    </section>
+
+    <div class="fcm-nqdc-cards">
+      <article class="fcm-nqdc-card fcm-nqdc-panel">
+        <h3><span class="fcm-nqdc-dot-d" aria-hidden="true"></span>Deferred path</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-deferred">—</div>
+        <p>After-tax value if distributed at the year entered</p>
+      </article>
+      <article class="fcm-nqdc-card fcm-nqdc-panel">
+        <h3><span class="fcm-nqdc-dot-n" aria-hidden="true"></span>Taxable path</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-nondeferred">—</div>
+        <p>Taxable account at that same year</p>
+      </article>
+    </div>
+
+    <div class="fcm-nqdc-bars" aria-hidden="true">
+      <div class="fcm-nqdc-bar-row">
+        <span class="fcm-nqdc-bar-name">Deferred</span>
+        <span class="fcm-nqdc-bar-track"><span class="fcm-nqdc-bar-fill fcm-nqdc-bar-fill-d" id="fcm-nqdc-bar-d"></span></span>
+      </div>
+      <div class="fcm-nqdc-bar-row">
+        <span class="fcm-nqdc-bar-name">Taxable</span>
+        <span class="fcm-nqdc-bar-track"><span class="fcm-nqdc-bar-fill fcm-nqdc-bar-fill-n" id="fcm-nqdc-bar-n"></span></span>
+      </div>
+    </div>
+
+    <section class="fcm-nqdc-panel" aria-label="Growth chart">
+      <div class="fcm-nqdc-chart-head">
+        <h3>Year-by-year, after tax</h3>
+        <div class="fcm-nqdc-legend">
+          <span><i class="fcm-nqdc-dot-d"></i>Deferred</span>
+          <span><i class="fcm-nqdc-dot-n"></i>Taxable</span>
+        </div>
+      </div>
+      <div class="fcm-nqdc-chart-box">
+        <canvas id="fcm-nqdc-chart" role="img" aria-label="Line chart of illustrated after-tax values by year. The table lists the same figures."></canvas>
+      </div>
+      <p class="fcm-nqdc-fallback" id="fcm-nqdc-chart-fallback" hidden>The line chart did not load. The year-by-year table uses the same figures.</p>
+      <p class="fcm-nqdc-caption">Each point is the illustrated after-tax value if the balance were taxed that year at the distribution rate entered. The first point applies those tax rates today, before growth. Same formula as the headline.</p>
+      <p class="fcm-nqdc-frac" id="fcm-nqdc-frac-note" hidden></p>
+    </section>
+
+    <div class="fcm-nqdc-stats">
+      <article class="fcm-nqdc-stat fcm-nqdc-panel">
+        <h3 class="fcm-nqdc-result-label">Break-even distribution tax rate</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-breakeven">—</div>
+        <p id="fcm-nqdc-breakeven-detail"></p>
+      </article>
+      <article class="fcm-nqdc-stat fcm-nqdc-panel">
+        <h3 class="fcm-nqdc-result-label">Employer counterparty risk</h3>
+        <div class="fcm-nqdc-risk-row">
+          <div class="fcm-nqdc-risk-dot is-low" id="fcm-nqdc-risk-dot" aria-hidden="true"></div>
+          <div>
+            <div class="fcm-nqdc-risk-title" id="fcm-nqdc-risk-title">—</div>
+            <p id="fcm-nqdc-risk-text"></p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="fcm-nqdc-derived">
+      <article class="fcm-nqdc-panel">
+        <h3 class="fcm-nqdc-result-label">Tax if taken now</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-upfront-tax">—</div>
+        <p>Illustrated tax on the taxable path, before anything is invested.</p>
+      </article>
+      <article class="fcm-nqdc-panel">
+        <h3 class="fcm-nqdc-result-label">Tax at distribution</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-dist-tax">—</div>
+        <p>Illustrated tax on the plan balance when it is paid.</p>
+      </article>
+      <article class="fcm-nqdc-panel">
+        <h3 class="fcm-nqdc-result-label">Invested outside the plan</h3>
+        <div class="fcm-nqdc-figure" id="fcm-nqdc-invested">—</div>
+        <p>What remains to invest after the tax if taken now.</p>
+      </article>
+    </div>
+
+    <section class="fcm-nqdc-panel" aria-label="Assumptions used in this illustration">
+      <h3 class="fcm-nqdc-result-label">Assumptions used</h3>
+      <dl class="fcm-nqdc-readout" id="fcm-nqdc-readout"></dl>
+    </section>
+
+    <section class="fcm-nqdc-panel" aria-label="Year by year breakdown">
+      <button type="button" class="fcm-nqdc-toggle" id="fcm-nqdc-table-toggle" aria-expanded="false" aria-controls="fcm-nqdc-table-wrap">Show the year-by-year breakdown</button>
+      <div class="fcm-nqdc-table-wrap is-collapsed" id="fcm-nqdc-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Year</th>
+              <th scope="col">Plan balance, pre-tax</th>
+              <th scope="col">Deferred if taxed</th>
+              <th scope="col">Taxable account</th>
+            </tr>
+          </thead>
+          <tbody id="fcm-nqdc-table-body"></tbody>
+          <caption>Dollars are rounded to the nearest dollar for the table and the chart. The headline rounds the same unrounded math.</caption>
+        </table>
+      </div>
+    </section>
+
+    <p class="fcm-nqdc-print-note">Want a copy? Print or save this illustration as a PDF.</p>
+    <div class="fcm-nqdc-actions">
+      <button type="button" class="fcm-nqdc-btn-secondary" id="fcm-nqdc-copy">Copy summary</button>
+      <button type="button" class="fcm-nqdc-btn-secondary" id="fcm-nqdc-share">Copy link to this illustration</button>
+      <button type="button" class="fcm-nqdc-btn-secondary" id="fcm-nqdc-print">Print or save PDF</button>
+    </div>
+    <p class="fcm-nqdc-action-status" id="fcm-nqdc-action-status" role="status"></p>
+  </div>
+</div>
+
+<section class="fcm-nqdc-optin" aria-label="Get The Friday 5">
+  <h2>Get The Friday 5</h2>
+  <p>One short email every Friday: what moved markets in plain English, plus a podcast, a read, a live-well tip, and a quote worth thinking about. Five minutes. As a bonus, we'll send you the most recent Forecast Report.</p>
+  <form class="fcm-nqdc-form" id="fcm-nqdc-email-form" method="post" action="#" novalidate>
+    <label for="fcm-nqdc-name">Name <span class="fcm-nqdc-optional">(optional)</span>
+      <input id="fcm-nqdc-name" name="name" type="text" autocomplete="name" maxlength="120">
+    </label>
+    <label for="fcm-nqdc-email">Email address
+      <input id="fcm-nqdc-email" name="email" type="email" required autocomplete="email" maxlength="254" placeholder="name@company.com" inputmode="email">
+    </label>
+    <div class="fcm-nqdc-hp" aria-hidden="true">
+      <label for="fcm-nqdc-hp">Leave this blank</label>
+      <input id="fcm-nqdc-hp" name="fcm_nqdc_hp" type="text" tabindex="-1" autocomplete="off" value="">
+    </div>
+    <button type="submit" class="fcm-nqdc-btn" id="fcm-nqdc-email-submit">Send me The Friday 5</button>
+  </form>
+  <p class="fcm-nqdc-fine">By joining, you agree to receive occasional emails from Forecast Capital Management. Unsubscribe anytime.</p>
+  <p class="fcm-nqdc-form-status" id="fcm-nqdc-form-status" role="status"></p>
+  <p class="fcm-nqdc-eyes">Want a second set of eyes? <a href="https://www.forecastcapitalmanagement.com/contact">https://www.forecastcapitalmanagement.com/contact</a></p>
+</section>
+
+<footer class="fcm-nqdc-disclaimer">
+  <p>For educational purposes only; not investment, tax, or legal advice. Forecast Capital Management is a registered investment adviser. Results are hypothetical estimates based on your inputs.</p>
+  <p>The model compounds one deferral at a constant pre-tax rate and one taxable investment at a constant after-tax rate. It does not calculate actual taxes, plan fees, investment expenses, payroll taxes, equity compensation, household income, or the chance the employer does not pay. NQDC terms vary by plan.</p>
+</footer>
+
+<p id="fcm-nqdc-live" class="fcm-nqdc-sr" aria-live="polite"></p>
+
+<noscript>
+  <p>This illustration needs JavaScript. Enable JavaScript to see the calculated figures.</p>
+</noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* FCM_NQDC_EXPORT_START */
+  function fcmNqdcCalculate(input) {
+    var s = {
+      amount: input.amount,
+      curTax: input.curTax,
+      futTax: input.futTax,
+      years: input.years,
+      planRet: input.planRet,
+      taxRet: input.taxRet
+    };
+    var r = s.planRet / 100;
+    var rt = s.taxRet / 100;
+    var tc = s.curTax / 100;
+    var tf = s.futTax / 100;
+    var n = s.years;
+    var A = s.amount;
+
+    var deferredGross = A * Math.pow(1 + r, n);
+    var deferredNet = deferredGross * (1 - tf);
+    var nondeferredNet = A * (1 - tc) * Math.pow(1 + rt, n);
+    var benefit = deferredNet - nondeferredNet;
+    var breakEven = (1 - nondeferredNet / deferredGross) * 100;
+
+    var dSeries = [];
+    var nSeries = [];
+    var preTaxSeries = [];
+    for (var y = 0; y <= n; y++) {
+      dSeries.push(Math.round(A * Math.pow(1 + r, y) * (1 - tf)));
+      nSeries.push(Math.round(A * (1 - tc) * Math.pow(1 + rt, y)));
+      preTaxSeries.push(Math.round(A * Math.pow(1 + r, y)));
+    }
+
+    return {
+      deferredGross: deferredGross,
+      deferredNet: deferredNet,
+      nondeferredNet: nondeferredNet,
+      benefit: benefit,
+      breakEven: breakEven,
+      dSeries: dSeries,
+      nSeries: nSeries,
+      preTaxSeries: preTaxSeries
+    };
+  }
+
+  function fcmNqdcDollar(v) {
+    return '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
+  }
+
+  function fcmNqdcDollarSigned(v) {
+    return (v >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
+  }
+
+  function fcmNqdcPct(v) {
+    return v.toFixed(1) + '%';
+  }
+
+  function fcmNqdcFormatYears(v) {
+    var n = Number(v);
+    var num = Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+    var unit = Math.abs(n - 1) < 1e-9 ? 'year' : 'years';
+    return num + ' ' + unit;
+  }
+
+  function fcmNqdcVerdict(benefit) {
+    if (!Number.isFinite(benefit)) return 'This illustration does not produce a numeric result';
+    return benefit >= 0
+      ? 'Deferral adds value in this scenario'
+      : 'Non-deferral outperforms in this scenario';
+  }
+
+  function fcmNqdcBreakEvenDetail(breakEven, futTax) {
+    if (!Number.isFinite(breakEven)) {
+      return 'A break-even rate is not defined when the illustrated plan balance is zero.';
+    }
+    if (futTax < breakEven) {
+      return 'The rate entered (' + futTax + '%) is below this break-even rate, so the deferral path is larger in this illustration.';
+    }
+    if (futTax > breakEven) {
+      return 'The rate entered (' + futTax + '%) is above this break-even rate, so the taxable path is larger in this illustration.';
+    }
+    return 'The rate entered (' + futTax + '%) matches this break-even rate, so the two paths finish together in this illustration.';
+  }
+
+  function fcmNqdcRiskInfo(employer) {
+    var map = {
+      strong: {
+        cls: 'low',
+        title: 'Lower',
+        text: 'Labeled lower counterparty risk, for a large, stable public company. The balance is still an unsecured promise, and participants are general creditors if the employer cannot pay. This label does not change the dollar illustration.'
+      },
+      moderate: {
+        cls: 'mod',
+        title: 'Moderate',
+        text: 'Labeled moderate counterparty risk, for a smaller or private company. Payment depends on that employer still being able to pay when the distribution is due. This label does not change the dollar illustration.'
+      },
+      atrisk: {
+        cls: 'high',
+        title: 'Elevated',
+        text: 'Labeled elevated counterparty risk, where financial uncertainty is present. The balance is an unsecured promise and may not be paid in full if the employer cannot meet it. This label does not change the dollar illustration.'
+      }
+    };
+    return map[employer] || map.strong;
+  }
+
+  function fcmNqdcDerived(input, result) {
+    return {
+      upfrontTax: input.amount * (input.curTax / 100),
+      distributionTax: result.deferredGross * (input.futTax / 100),
+      investedNow: input.amount * (1 - input.curTax / 100)
+    };
+  }
+
+  function fcmNqdcSummary(input, result) {
+    var yearsLabel = fcmNqdcFormatYears(input.years);
+    var amount = fcmNqdcDollar(input.amount);
+    var def = fcmNqdcDollar(result.deferredNet);
+    var nond = fcmNqdcDollar(result.nondeferredNet);
+    var gap = fcmNqdcDollar(result.benefit);
+    var invested = fcmNqdcDollar(input.amount * (1 - input.curTax / 100));
+    var entered = input.futTax + '%';
+    var be = Number.isFinite(result.breakEven) ? fcmNqdcPct(result.breakEven) : null;
+    var lead;
+    if (!Number.isFinite(result.benefit) || !Number.isFinite(result.deferredNet)) {
+      lead = 'These assumptions do not produce a numeric illustration.';
+    } else if (Math.round(result.benefit) === 0) {
+      lead = 'In this illustration, deferring ' + amount + ' for ' + yearsLabel + ' and investing the after-tax amount of ' + invested + ' finish together, at about ' + def + '.';
+    } else if (result.benefit > 0) {
+      lead = 'In this illustration, deferring ' + amount + ' for ' + yearsLabel + ' is about ' + def + ' after tax at distribution. Investing the after-tax amount of ' + invested + ' in a taxable account is about ' + nond + '. The deferral path is larger by about ' + gap + '.';
+    } else {
+      lead = 'In this illustration, deferring ' + amount + ' for ' + yearsLabel + ' is about ' + def + ' after tax at distribution. Investing the after-tax amount of ' + invested + ' in a taxable account is about ' + nond + '. The taxable path is larger by about ' + gap + '.';
+    }
+    var second;
+    if (be === null) {
+      second = 'A break-even distribution tax rate is not defined, because the illustrated plan balance is zero. The rates and returns used here are assumptions, not a forecast.';
+    } else if (result.breakEven < 0) {
+      second = 'The break-even distribution tax rate is ' + be + '. That is below zero, which means the taxable account ends ahead of the plan balance even before distribution tax. Under these assumptions the deferral path is not larger at any positive distribution tax rate. The rates and returns are assumptions, not a forecast.';
+    } else {
+      second = 'The two after-tax paths meet in this model when the distribution tax rate is ' + be + '. The rate entered for distribution is ' + entered + '. The rates and returns are assumptions, not a forecast.';
+    }
+    return { lead: lead, second: second, text: lead + ' ' + second };
+  }
+
+  function fcmNqdcIsValidEmail(email) {
+    var value = String(email || '').trim();
+    if (!value || value.length > 254) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  function fcmNqdcPrepareSubscribe(input) {
+    var details = input || {};
+    if (details.alreadySent) {
+      return { ok: false, send: false, reason: 'already-sent' };
+    }
+    if (String(details.honeypot || '').trim()) {
+      return { ok: true, send: false, reason: 'honeypot' };
+    }
+    var email = String(details.email || '').trim();
+    var name = String(details.name || '').trim();
+    if (!fcmNqdcIsValidEmail(email)) {
+      return { ok: false, send: false, reason: 'invalid-email' };
+    }
+    return {
+      ok: true,
+      send: true,
+      reason: 'ready',
+      payload: {
+        email: email,
+        name: name,
+        source: 'nqdc-calculator'
+      }
+    };
+  }
+
+  function fcmNqdcSendSubscribe(endpoint, payload, fetchImpl) {
+    var send = fetchImpl || fetch;
+    return send(endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload)
+    });
+  }
+  /* FCM_NQDC_EXPORT_END */
+
+  var EMPLOYER_LABELS = {
+    strong: 'Strong — large, stable public company',
+    moderate: 'Moderate — smaller or private company',
+    atrisk: 'At risk — financial uncertainty present'
+  };
+
+  var defaults = {
+    amount: 100000,
+    curTax: 45,
+    futTax: 35,
+    years: 7,
+    planRet: 7,
+    taxRet: 5.5,
+    employer: 'strong'
+  };
+
+  var s = {
+    amount: defaults.amount,
+    curTax: defaults.curTax,
+    futTax: defaults.futTax,
+    years: defaults.years,
+    planRet: defaults.planRet,
+    taxRet: defaults.taxRet,
+    employer: defaults.employer
+  };
+
+  var root = document.getElementById('fcm-nqdc');
+  var chart = null;
+  var pendingChart = null;
+  var publishTimer = null;
+  var publishedOnce = false;
+  var lastSummary = null;
+
+  function $(id) { return document.getElementById(id); }
+
+  function ensureFonts() {
+    if (document.getElementById('fcm-nqdc-fonts')) return;
+    var link = document.createElement('link');
+    link.id = 'fcm-nqdc-fonts';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap';
+    (document.head || document.documentElement).appendChild(link);
+  }
+
+  function formatAmount(v) {
+    var n = Number(v);
+    var rounded = Math.round(n);
+    if (Math.abs(n - rounded) < 1e-9) return '$' + rounded.toLocaleString('en-US');
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatTax(v) {
+    var n = Math.round(Number(v) * 100) / 100;
+    return String(n) + '%';
+  }
+
+  function formatRate(v) {
+    var n = Number(v);
+    if (Math.abs(n * 2 - Math.round(n * 2)) < 1e-8) return n.toFixed(1) + '%';
+    return (Math.round(n * 100) / 100).toString() + '%';
+  }
+
+  function formatYearsInput(v) {
+    return fcmNqdcFormatYears(v);
+  }
+
+  function parseLoose(raw) {
+    if (typeof raw !== 'string') raw = String(raw);
+    var cleaned = raw.replace(/[^0-9.]/g, '');
+    if (!cleaned) return NaN;
+    return parseFloat(cleaned);
+  }
+
+  function loadChartJs(done) {
+    if (window.Chart) { done(); return; }
+    var existing = document.getElementById('fcm-nqdc-chartjs');
+    if (existing) {
+      existing.addEventListener('load', done);
+      existing.addEventListener('error', onChartError);
+      return;
+    }
+    var script = document.createElement('script');
+    script.id = 'fcm-nqdc-chartjs';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+    script.async = true;
+    script.onload = done;
+    script.onerror = onChartError;
+    (document.head || document.documentElement).appendChild(script);
+  }
+
+  function onChartError() {
+    var note = $('fcm-nqdc-chart-fallback');
+    if (note) note.hidden = false;
+  }
+
+  function formatAxis(v) {
+    var n = Number(v);
+    var sign = n < 0 ? '-' : '';
+    var a = Math.abs(n);
+    if (a >= 1e6) return sign + '$' + (a / 1e6).toFixed(1) + 'M';
+    if (a >= 10000) return sign + '$' + Math.round(a / 1000) + 'K';
+    if (a >= 1000) return sign + '$' + (a / 1000).toFixed(1) + 'K';
+    return sign + '$' + Math.round(a).toLocaleString('en-US');
+  }
+
+  function drawChart(dSeries, nSeries, years) {
+    pendingChart = { dSeries: dSeries, nSeries: nSeries, years: years };
+    if (!window.Chart) return;
+    var canvas = $('fcm-nqdc-chart');
+    if (!canvas) return;
+    var last = Math.max(0, Math.floor(Number(years)));
+    var labels = [];
+    for (var i = 0; i <= last && i < dSeries.length; i++) {
+      labels.push(i === 0 ? 'Now' : 'Yr ' + i);
+    }
+    var labelCount = labels.length;
+    var dData = dSeries.slice(0, labelCount);
+    var nData = nSeries.slice(0, labelCount);
+    if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = dData;
+      chart.data.datasets[1].data = nData;
+      chart.update();
+      return;
+    }
+    chart = new window.Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Deferred (after tax)',
+            data: dData,
+            borderColor: '#7a5c28',
+            backgroundColor: 'rgba(198,161,90,0.14)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.35,
+            fill: true
+          },
+          {
+            label: 'Taxable account',
+            data: nData,
+            borderColor: '#222222',
+            backgroundColor: 'rgba(34,34,34,0.05)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.35,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 280 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#222',
+            titleColor: '#f3efe8',
+            bodyColor: '#fff',
+            titleFont: { family: 'Lora, Georgia, serif', size: 12 },
+            bodyFont: { family: 'Lora, Georgia, serif', size: 13 },
+            callbacks: {
+              label: function (ctx) {
+                return ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('en-US');
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(230,224,214,0.9)' },
+            ticks: { color: '#5e5954', font: { family: 'Lora, Georgia, serif', size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(230,224,214,0.9)' },
+            ticks: {
+              color: '#5e5954',
+              font: { family: 'Lora, Georgia, serif', size: 11 },
+              callback: formatAxis
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function yearLines(result) {
+    var lines = ['Year | Plan balance pre-tax | Deferred if taxed | Taxable account'];
+    var n = result.dSeries.length;
+    for (var i = 0; i < n; i++) {
+      var label = i === 0 ? 'Now' : String(i);
+      lines.push(label + ' | ' + fcmNqdcDollar(result.preTaxSeries[i]) + ' | ' + fcmNqdcDollar(result.dSeries[i]) + ' | ' + fcmNqdcDollar(result.nSeries[i]));
+    }
+    return lines.join('\n');
+  }
+
+  function plainText(result, summary) {
+    var risk = fcmNqdcRiskInfo(s.employer);
+    var be = Number.isFinite(result.breakEven) ? fcmNqdcPct(result.breakEven) : 'Not defined';
+    return [
+      'NQDC illustration — Forecast Capital Management',
+      'For educational purposes only; not investment, tax, or legal advice. Forecast Capital Management is a registered investment adviser. Results are hypothetical estimates based on your inputs.',
+      '',
+      'Assumptions',
+      'Amount to defer (pre-tax): ' + formatAmount(s.amount),
+      'Marginal tax rate if taken this year: ' + formatTax(s.curTax),
+      'Marginal tax rate at distribution: ' + formatTax(s.futTax),
+      'Years until distribution: ' + fcmNqdcFormatYears(s.years),
+      'Pre-tax return inside the plan: ' + formatRate(s.planRet),
+      'After-tax return in a taxable account: ' + formatRate(s.taxRet),
+      'Employer financial health: ' + (EMPLOYER_LABELS[s.employer] || s.employer),
+      '',
+      'Results',
+      'Illustrated net benefit of deferral: ' + fcmNqdcDollarSigned(result.benefit),
+      'Deferred path, after tax: ' + fcmNqdcDollar(result.deferredNet),
+      'Taxable path: ' + fcmNqdcDollar(result.nondeferredNet),
+      'Break-even distribution tax rate: ' + be,
+      'Employer counterparty risk label: ' + risk.title,
+      '',
+      summary.text,
+      '',
+      yearLines(result)
+    ].join('\n');
+  }
+
+  function fillReadout() {
+    var rows = [
+      ['Amount to defer', formatAmount(s.amount)],
+      ['Tax rate if taken now', formatTax(s.curTax)],
+      ['Tax rate at distribution', formatTax(s.futTax)],
+      ['Years until distribution', fcmNqdcFormatYears(s.years)],
+      ['Pre-tax return in the plan', formatRate(s.planRet)],
+      ['After-tax return outside', formatRate(s.taxRet)],
+      ['Employer financial health', EMPLOYER_LABELS[s.employer] || s.employer]
+    ];
+    var dl = $('fcm-nqdc-readout');
+    dl.textContent = '';
+    rows.forEach(function (row) {
+      var wrap = document.createElement('div');
+      var dt = document.createElement('dt');
+      dt.textContent = row[0];
+      var dd = document.createElement('dd');
+      dd.textContent = row[1];
+      wrap.appendChild(dt);
+      wrap.appendChild(dd);
+      dl.appendChild(wrap);
+    });
+  }
+
+  function fillTable(result) {
+    var body = $('fcm-nqdc-table-body');
+    body.textContent = '';
+    for (var i = 0; i < result.dSeries.length; i++) {
+      var tr = document.createElement('tr');
+      var cells = [
+        i === 0 ? 'Now' : String(i),
+        fcmNqdcDollar(result.preTaxSeries[i]),
+        fcmNqdcDollar(result.dSeries[i]),
+        fcmNqdcDollar(result.nSeries[i])
+      ];
+      cells.forEach(function (text, idx) {
+        var cell = document.createElement(idx === 0 ? 'th' : 'td');
+        if (idx === 0) cell.scope = 'row';
+        cell.textContent = text;
+        tr.appendChild(cell);
+      });
+      body.appendChild(tr);
+    }
+  }
+
+  function schedulePublish(result) {
+    window.clearTimeout(publishTimer);
+    var delay = publishedOnce ? 600 : 0;
+    publishTimer = window.setTimeout(function () {
+      publishedOnce = true;
+      var detail = {
+        event: 'calculation completed',
+        calculator: 'fcm-nqdc',
+        deferralAmount: s.amount,
+        currentMarginalTaxRate: s.curTax,
+        distributionTaxRate: s.futTax,
+        years: s.years,
+        planReturn: s.planRet,
+        taxableReturn: s.taxRet,
+        employerHealth: s.employer,
+        netBenefitRounded: Math.round(result.benefit)
+      };
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(detail);
+      root.dispatchEvent(new CustomEvent('fcm-nqdc-calculation-completed', { bubbles: true, detail: detail }));
+      var live = $('fcm-nqdc-live');
+      if (live) {
+        live.textContent = 'Illustrated net benefit of deferral ' + fcmNqdcDollarSigned(result.benefit) + '. ' + fcmNqdcVerdict(result.benefit) + '.';
+      }
+    }, delay);
+  }
+
+  function update() {
+    var result = fcmNqdcCalculate(s);
+    var summary = fcmNqdcSummary(s, result);
+    var derived = fcmNqdcDerived(s, result);
+    var risk = fcmNqdcRiskInfo(s.employer);
+    var isPos = result.benefit >= 0;
+    lastSummary = { result: result, summary: summary };
+
+    var hero = $('fcm-nqdc-benefit');
+    hero.textContent = fcmNqdcDollarSigned(result.benefit);
+    hero.className = 'fcm-nqdc-hero-num ' + (isPos ? 'is-pos' : 'is-neg');
+
+    var verdict = $('fcm-nqdc-verdict');
+    verdict.textContent = fcmNqdcVerdict(result.benefit);
+    verdict.className = 'fcm-nqdc-verdict ' + (isPos ? 'is-pos' : 'is-neg');
+
+    $('fcm-nqdc-summary-lead').textContent = summary.lead;
+    $('fcm-nqdc-summary-second').textContent = summary.second;
+    $('fcm-nqdc-deferred').textContent = fcmNqdcDollar(result.deferredNet);
+    $('fcm-nqdc-nondeferred').textContent = fcmNqdcDollar(result.nondeferredNet);
+
+    var maxBar = Math.max(result.deferredNet, result.nondeferredNet, 0);
+    $('fcm-nqdc-bar-d').style.width = maxBar > 0 ? (Math.max(result.deferredNet, 0) / maxBar * 100) + '%' : '0%';
+    $('fcm-nqdc-bar-n').style.width = maxBar > 0 ? (Math.max(result.nondeferredNet, 0) / maxBar * 100) + '%' : '0%';
+
+    $('fcm-nqdc-breakeven').textContent = Number.isFinite(result.breakEven) ? fcmNqdcPct(result.breakEven) : 'Not defined';
+    $('fcm-nqdc-breakeven-detail').textContent = fcmNqdcBreakEvenDetail(result.breakEven, s.futTax);
+
+    var dot = $('fcm-nqdc-risk-dot');
+    dot.className = 'fcm-nqdc-risk-dot is-' + risk.cls;
+    $('fcm-nqdc-risk-title').textContent = risk.title;
+    $('fcm-nqdc-risk-text').textContent = risk.text;
+
+    $('fcm-nqdc-upfront-tax').textContent = fcmNqdcDollar(derived.upfrontTax);
+    $('fcm-nqdc-dist-tax').textContent = fcmNqdcDollar(derived.distributionTax);
+    $('fcm-nqdc-invested').textContent = fcmNqdcDollar(derived.investedNow);
+
+    var frac = $('fcm-nqdc-frac-note');
+    if (Number.isFinite(s.years) && Math.abs(s.years - Math.round(s.years)) > 1e-8) {
+      frac.hidden = false;
+      frac.textContent = 'The headline compounds for ' + s.years + ' years. The chart and table plot whole years through year ' + Math.floor(Math.max(s.years, 0)) + ', matching the original calculator.';
+    } else {
+      frac.hidden = true;
+      frac.textContent = '';
+    }
+
+    fillReadout();
+    fillTable(result);
+    drawChart(result.dSeries, result.nSeries, s.years);
+    schedulePublish(result);
+  }
+
+  function wire(sliderId, valId, key, hintId, format) {
+    var slider = $(sliderId);
+    var valEl = $(valId);
+    var hint = $(hintId);
+
+    function syncSliderAria() {
+      slider.setAttribute('aria-valuenow', String(s[key]));
+      slider.setAttribute('aria-valuetext', format(s[key]));
+    }
+
+    function applyNumber(raw) {
+      if (!Number.isFinite(raw)) {
+        hint.textContent = 'Enter a number. The illustration is still using the previous value.';
+        valEl.value = format(s[key]);
+        return;
+      }
+      var min = parseFloat(slider.min);
+      var max = parseFloat(slider.max);
+      var next = raw;
+      var msg = '';
+      if (raw < min) {
+        next = min;
+        msg = 'Lowest value in this model is ' + format(min) + '. Adjusted.';
+      } else if (raw > max) {
+        next = max;
+        msg = 'Highest value in this model is ' + format(max) + '. Adjusted.';
+      }
+      s[key] = next;
+      slider.value = String(next);
+      valEl.value = format(next);
+      hint.textContent = msg;
+      syncSliderAria();
+      update();
+    }
+
+    slider.addEventListener('input', function () {
+      applyNumber(parseFloat(slider.value));
+    });
+    valEl.addEventListener('change', function () {
+      applyNumber(parseLoose(valEl.value));
+    });
+    valEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        valEl.blur();
+      }
+    });
+    syncSliderAria();
+  }
+
+  function applyHash() {
+    var raw = (window.location.hash || '').replace(/^#/, '');
+    if (raw.indexOf('fcm-nqdc=') !== 0) return;
+    var parts = raw.slice('fcm-nqdc='.length).split(',');
+    if (parts.length !== 7) return;
+    var keys = ['amount', 'curTax', 'futTax', 'years', 'planRet', 'taxRet'];
+    var limits = {
+      amount: ['fcm-nqdc-amount', formatAmount],
+      curTax: ['fcm-nqdc-cur', formatTax],
+      futTax: ['fcm-nqdc-fut', formatTax],
+      years: ['fcm-nqdc-years', formatYearsInput],
+      planRet: ['fcm-nqdc-plan', formatRate],
+      taxRet: ['fcm-nqdc-taxret', formatRate]
+    };
+    for (var i = 0; i < keys.length; i++) {
+      var num = parseFloat(parts[i]);
+      if (!Number.isFinite(num)) return;
+    }
+    if (!EMPLOYER_LABELS[parts[6]]) return;
+    keys.forEach(function (key, i) {
+      var slider = $(limits[key][0]);
+      var min = parseFloat(slider.min);
+      var max = parseFloat(slider.max);
+      var next = Math.min(max, Math.max(min, parseFloat(parts[i])));
+      s[key] = next;
+      slider.value = String(next);
+      var valId = limits[key][0] + '-val';
+      $(valId).value = limits[key][1](next);
+    });
+    s.employer = parts[6];
+    $('fcm-nqdc-employer').value = s.employer;
+  }
+
+  function stripOurHash() {
+    var raw = (window.location.hash || '').replace(/^#/, '');
+    if (raw.indexOf('fcm-nqdc=') === 0) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
+
+  function shareUrl() {
+    var hash = 'fcm-nqdc=' + [s.amount, s.curTax, s.futTax, s.years, s.planRet, s.taxRet, s.employer].join(',');
+    var url = new URL(window.location.href);
+    url.hash = hash;
+    return url.toString();
+  }
+
+  function copyText(text, okMessage) {
+    var status = $('fcm-nqdc-action-status');
+    function ok() { status.textContent = okMessage; }
+    function fail() { status.textContent = 'Copy did not complete. You can select the text from a print view instead.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok, function () { fallback(); });
+    } else {
+      fallback();
+    }
+    function fallback() {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      try {
+        if (document.execCommand('copy')) ok();
+        else fail();
+      } catch (err) {
+        fail();
+      }
+      document.body.removeChild(area);
+    }
+  }
+
+  function bindTips() {
+    var buttons = root.querySelectorAll('.fcm-nqdc-info');
+    Array.prototype.forEach.call(buttons, function (btn) {
+      btn.addEventListener('click', function () {
+        var tip = $(btn.getAttribute('aria-controls'));
+        if (!tip) return;
+        var willOpen = tip.hidden;
+        tip.hidden = !willOpen;
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+  }
+
+  function setFieldDisplays() {
+    var pairs = [
+      ['fcm-nqdc-amount', 'amount', formatAmount],
+      ['fcm-nqdc-cur', 'curTax', formatTax],
+      ['fcm-nqdc-fut', 'futTax', formatTax],
+      ['fcm-nqdc-years', 'years', formatYearsInput],
+      ['fcm-nqdc-plan', 'planRet', formatRate],
+      ['fcm-nqdc-taxret', 'taxRet', formatRate]
+    ];
+    pairs.forEach(function (pair) {
+      var slider = $(pair[0]);
+      slider.value = String(s[pair[1]]);
+      $(pair[0] + '-val').value = pair[2](s[pair[1]]);
+      slider.setAttribute('aria-valuenow', String(s[pair[1]]));
+      slider.setAttribute('aria-valuetext', pair[2](s[pair[1]]));
+    });
+    $('fcm-nqdc-employer').value = s.employer;
+  }
+
+  ensureFonts();
+  applyHash();
+
+  wire('fcm-nqdc-amount', 'fcm-nqdc-amount-val', 'amount', 'fcm-nqdc-amount-hint', formatAmount);
+  wire('fcm-nqdc-cur', 'fcm-nqdc-cur-val', 'curTax', 'fcm-nqdc-cur-hint', formatTax);
+  wire('fcm-nqdc-fut', 'fcm-nqdc-fut-val', 'futTax', 'fcm-nqdc-fut-hint', formatTax);
+  wire('fcm-nqdc-years', 'fcm-nqdc-years-val', 'years', 'fcm-nqdc-years-hint', formatYearsInput);
+  wire('fcm-nqdc-plan', 'fcm-nqdc-plan-val', 'planRet', 'fcm-nqdc-plan-hint', formatRate);
+  wire('fcm-nqdc-taxret', 'fcm-nqdc-taxret-val', 'taxRet', 'fcm-nqdc-taxret-hint', formatRate);
+
+  $('fcm-nqdc-employer').addEventListener('change', function (e) {
+    s.employer = e.target.value;
+    update();
+  });
+
+  $('fcm-nqdc-reset').addEventListener('click', function () {
+    s.amount = defaults.amount;
+    s.curTax = defaults.curTax;
+    s.futTax = defaults.futTax;
+    s.years = defaults.years;
+    s.planRet = defaults.planRet;
+    s.taxRet = defaults.taxRet;
+    s.employer = defaults.employer;
+    setFieldDisplays();
+    Array.prototype.forEach.call(root.querySelectorAll('.fcm-nqdc-hint'), function (el) { el.textContent = ''; });
+    stripOurHash();
+    update();
+    $('fcm-nqdc-action-status').textContent = 'Assumptions reset to the starting point.';
+  });
+
+  $('fcm-nqdc-table-toggle').addEventListener('click', function () {
+    var wrap = $('fcm-nqdc-table-wrap');
+    var open = wrap.classList.contains('is-collapsed');
+    wrap.classList.toggle('is-collapsed', !open);
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+    this.textContent = open ? 'Hide the year-by-year breakdown' : 'Show the year-by-year breakdown';
+  });
+
+  $('fcm-nqdc-copy').addEventListener('click', function () {
+    if (!lastSummary) return;
+    copyText(plainText(lastSummary.result, lastSummary.summary), 'Summary copied.');
+  });
+
+  $('fcm-nqdc-share').addEventListener('click', function () {
+    copyText(shareUrl(), 'Link copied. It reopens this illustration with the same assumptions.');
+  });
+
+  $('fcm-nqdc-print').addEventListener('click', function () {
+    window.print();
+  });
+
+  var form = $('fcm-nqdc-email-form');
+  var config = window.FCM_NQDC_CONFIG || {};
+  var subscribeLock = false;
+  var submitBtn = $('fcm-nqdc-email-submit');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var status = $('fcm-nqdc-form-status');
+    var decision = fcmNqdcPrepareSubscribe({
+      email: $('fcm-nqdc-email').value,
+      name: $('fcm-nqdc-name').value,
+      honeypot: $('fcm-nqdc-hp').value,
+      alreadySent: subscribeLock
+    });
+    if (decision.reason === 'already-sent') return;
+    if (decision.reason === 'invalid-email') {
+      status.textContent = 'Enter an email address like name@company.com.';
+      $('fcm-nqdc-email').focus();
+      return;
+    }
+    subscribeLock = true;
+    submitBtn.disabled = true;
+    if (!decision.send) {
+      status.textContent = "You're on the list. Check your inbox for the Forecast Report.";
+      return;
+    }
+    var endpoint = config.SUBSCRIBE_ENDPOINT || '';
+    fcmNqdcSendSubscribe(endpoint, decision.payload).then(function () {
+      status.textContent = "You're on the list. Check your inbox for the Forecast Report.";
+    }, function () {
+      subscribeLock = false;
+      submitBtn.disabled = false;
+      status.textContent = 'That did not send. The illustration is still on this page.';
+    });
+  });
+
+  bindTips();
+  update();
+  loadChartJs(function () {
+    if (pendingChart) drawChart(pendingChart.dSeries, pendingChart.nSeries, pendingChart.years);
+  });
+
+  window.FcmNqdc = {
+    calculate: fcmNqdcCalculate,
+    summary: fcmNqdcSummary,
+    config: config
+  };
+})();
+</script>
+</div>
+</body>
+</html>
